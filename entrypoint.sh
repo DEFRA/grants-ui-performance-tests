@@ -20,7 +20,6 @@ LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
 
 # Run the test suite
 jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f -Jenv="${ENVIRONMENT}"
-test_exit_code=$?
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
 if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
@@ -40,4 +39,8 @@ else
    exit 1
 fi
 
-exit $test_exit_code
+# exit non-zero if failures reported
+if grep -q ',false,' ${REPORTFILE}; then
+    echo "RESULTS CONTAIN FAILURES, EXITING NON-ZERO"
+    exit 1
+fi

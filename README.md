@@ -1,46 +1,30 @@
 # grants-ui-performance-tests
 
-A JMeter based test runner for the CDP Platform.
+This performance test suite is maintained by Grants Application Enablement (GAE) team, covering:
 
-- [Licence](#licence)
-  - [About the licence](#about-the-licence)
+- Non-land based grant application journeys served by `grants-ui`
+- General `grants-ui` components maintained by GAE
 
-## Build
+There is an individual test plan for each grant in the `/scenarios` directory. To run a specific test plan in CI edit the `TEST_SCENARIO` environment variable set in the Dockerfile.
 
-Test suites are built automatically by the [.github/workflows/publish.yml](.github/workflows/publish.yml) action whenever a change are committed to the `main` branch.
-A successful build results in a Docker container that is capable of running your tests on the CDP Platform and publishing the results to the CDP Portal.
+Each test plan will:
 
-## Run
+- Run for 180 seconds
+- Ramp up to 50 threads following the full grant journey with a 3 second interval between interactions
+- Assert that all requests receive an HTTP 200 Ok response
+- Assert that the average response time is under 500 ms
+- Assert that no single response is greater that 3000 ms
+- Currently we do not submit the final application for email sending as this can generate 429 responses from GOV Notify
 
-The performance test suites are designed to be run from the CDP Portal.
-The CDP Platform runs test suites in much the same way it runs any other service, it takes a docker image and runs it as an ECS task, automatically provisioning infrastructure as required.
+The intention is to prevent an unexpected performance regression being introduced to the service.
 
-## Local Testing with LocalStack
+### Running locally
 
-### Build a new Docker image
-```
-docker build . -t my-performance-tests
-```
-### Create a Localstack bucket
-```
-aws --endpoint-url=localhost:4566 s3 mb s3://my-bucket
-```
+Use JMeter GUI. Set the `Server Name` in `HTTP Request Defaults` to an instance of service `forms-runner-v2`, either hosted or local, and use JMeter to run the test. 
 
-### Run performance tests
+### CDP Portal
 
-```
-docker run \
--e S3_ENDPOINT='http://host.docker.internal:4566' \
--e RESULTS_OUTPUT_S3_PATH='s3://my-bucket' \
--e AWS_ACCESS_KEY_ID='test' \
--e AWS_SECRET_ACCESS_KEY='test' \
--e AWS_SECRET_KEY='test' \
--e AWS_REGION='eu-west-2' \
-my-performance-tests
-```
-
-docker run -e S3_ENDPOINT='http://host.docker.internal:4566' -e RESULTS_OUTPUT_S3_PATH='s3://cdp-infra-dev-test-results/cdp-portal-perf-tests/95a01432-8f47-40d2-8233-76514da2236a' -e AWS_ACCESS_KEY_ID='test' -e AWS_SECRET_ACCESS_KEY='test' -e AWS_SECRET_KEY='test' -e AWS_REGION='eu-west-2' -e ENVIRONMENT='perf-test' my-performance-tests
-
+Tests are run from the CDP Portal under the `Test Suites` section. Before any changes can be run, a new docker image must be built, this will happen automatically when a pull request is merged into the `main` branch. The reports from the test run are then available through the portal.
 
 ## Licence
 
