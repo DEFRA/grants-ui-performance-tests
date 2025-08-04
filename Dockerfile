@@ -7,6 +7,6 @@ COPY entrypoint.sh .
 COPY user.properties .
 
 ENV S3_ENDPOINT=https://s3.eu-west-2.amazonaws.com
-ENV TEST_SCENARIO=adding-value
+ENV TEST_SCENARIO=example-grant-with-auth
 
 ENTRYPOINT [ "./entrypoint.sh" ]
