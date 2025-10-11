@@ -6,9 +6,20 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
-      <boolProp name="TestPlan.functional_mode">false</boolProp>
     </TestPlan>
     <hashTree>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config">
+        <stringProp name="delimiter">,</stringProp>
+        <stringProp name="fileEncoding"></stringProp>
+        <stringProp name="filename">C:/Defra/src/grants-ui-performance-tests/users.csv</stringProp>
+        <boolProp name="ignoreFirstLine">false</boolProp>
+        <boolProp name="quotedData">false</boolProp>
+        <boolProp name="recycle">false</boolProp>
+        <stringProp name="shareMode">shareMode.all</stringProp>
+        <boolProp name="stopThread">true</boolProp>
+        <stringProp name="variableNames">CRN</stringProp>
+      </CSVDataSet>
+      <hashTree/>
       <DNSCacheManager guiclass="DNSCachePanel" testclass="DNSCacheManager" testname="DNS Cache">
         <collectionProp name="DNSCacheManager.servers"/>
         <collectionProp name="DNSCacheManager.hosts"/>
@@ -28,16 +39,7 @@
         <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
       </CookieManager>
       <hashTree/>
-      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults">
-        <stringProp name="HTTPSampler.domain">grants-ui.${__P(env)}.cdp-int.defra.cloud</stringProp>
-        <stringProp name="HTTPSampler.protocol">https</stringProp>
-        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-          <collectionProp name="Arguments.arguments"/>
-        </elementProp>
-        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
-      </ConfigTestElement>
-      <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Initialize Counters">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Initialize Counters" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -64,7 +66,7 @@ SampleResult.setIgnore();</stringProp>
         <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="example-grant-with-auth">
-        <intProp name="ThreadGroup.num_threads">50</intProp>
+        <intProp name="ThreadGroup.num_threads">3</intProp>
         <intProp name="ThreadGroup.ramp_time">10</intProp>
         <longProp name="ThreadGroup.duration">180</longProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
@@ -76,6 +78,8 @@ SampleResult.setIgnore();</stringProp>
         </elementProp>
       </ThreadGroup>
       <hashTree>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Once Only Controller"/>
+        <hashTree/>
         <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Human Interaction Delay">
           <stringProp name="ConstantTimer.delay">3000</stringProp>
         </ConstantTimer>
@@ -96,7 +100,7 @@ SampleResult.setIgnore();</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="script">import org.apache.jmeter.util.JMeterUtils;
 
-long thresholdMs = 500;
+long thresholdMs = 3000;
 long minimumSampleSize = 50;
 long requestCount = JMeterUtils.getPropDefault(&quot;requestCount&quot;, 0);
 long totalResponseTimeMs = JMeterUtils.getPropDefault(&quot;totalResponseTimeMs&quot;, 0);
@@ -120,12 +124,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           <stringProp name="scriptLanguage">groovy</stringProp>
         </JSR223Assertion>
         <hashTree/>
-        <DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="Maximum Response Time Assertion">
-          <stringProp name="DurationAssertion.duration">3000</stringProp>
-        </DurationAssertion>
-        <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /example-grant-with-auth/start">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/start</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET start" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -134,8 +134,35 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
             <collectionProp name="Arguments.arguments"/>
           </elementProp>
         </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Defra ID Stub Login">
+          <stringProp name="HTTPSampler.path">https://fcp-defra-id-stub.perf-test.cdp-int.defra.cloud/dcidmtest.onmicrosoft.com/oauth2/authresp</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.BROWSER_COMPATIBLE_MULTIPART">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="crn" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.value">${CRN}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">crn</stringProp>
+              </elementProp>
+              <elementProp name="password" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.value">x</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">password</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
         <hashTree>
-          <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="Extract crumb">
+          <XPathExtractor guiclass="XPathExtractorGui" testclass="XPathExtractor" testname="Extract crumb" enabled="true">
             <stringProp name="XPathExtractor.default"></stringProp>
             <stringProp name="XPathExtractor.refname">CRUMB</stringProp>
             <stringProp name="XPathExtractor.matchNumber">-1</stringProp>
@@ -146,8 +173,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </XPathExtractor>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/start">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/start</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST start">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -165,8 +192,34 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/autocomplete-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/autocomplete-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST yes-no-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/yes-no-field</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="crumb" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.value">${CRUMB}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">crumb</stringProp>
+              </elementProp>
+              <elementProp name="yesNoField" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.value">true</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">yesNoField</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST autocomplete-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/autocomplete-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -182,7 +235,7 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
               </elementProp>
               <elementProp name="autocompleteField" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">ZWE</stringProp>
+                <stringProp name="Argument.value">ENG</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">autocompleteField</stringProp>
@@ -191,8 +244,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/radios-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/radios-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST radios-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/radios-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -208,7 +261,7 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
               </elementProp>
               <elementProp name="radiosField" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">radiosFieldOption-A1</stringProp>
+                <stringProp name="Argument.value">radiosFieldOption-A2</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">radiosField</stringProp>
@@ -217,27 +270,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST/example-grant-with-auth/conditional-page">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/conditional-page</stringProp>
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">POST</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="crumb" elementType="HTTPArgument">
-                <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">${CRUMB}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-                <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                <stringProp name="Argument.name">crumb</stringProp>
-              </elementProp>
-            </collectionProp>
-          </elementProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/checkboxes-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/checkboxes-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST checkboxes-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/checkboxes-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -262,8 +296,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/number-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/number-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST number-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/number-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -288,8 +322,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/date-parts-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/date-parts-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST date-parts-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/date-parts-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -305,14 +339,14 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
               </elementProp>
               <elementProp name="datePartsField__day" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">01</stringProp>
+                <stringProp name="Argument.value">31</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">datePartsField__day</stringProp>
               </elementProp>
               <elementProp name="datePartsField__month" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">11</stringProp>
+                <stringProp name="Argument.value">12</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">datePartsField__month</stringProp>
@@ -328,8 +362,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/month-year-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/month-year-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST month-year-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/month-year-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -345,7 +379,7 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
               </elementProp>
               <elementProp name="monthYearField__month" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">08</stringProp>
+                <stringProp name="Argument.value">12</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">monthYearField__month</stringProp>
@@ -361,8 +395,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/select-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/select-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST select-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/select-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -378,7 +412,7 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
               </elementProp>
               <elementProp name="selectField" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value"> selectFieldOption-A1</stringProp>
+                <stringProp name="Argument.value">selectFieldOption-A1</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">selectField</stringProp>
@@ -387,8 +421,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/multiline-text-field">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/multiline-text-field</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST multiline-text-field" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/multiline-text-field</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -413,8 +447,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/multi-field-form">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/multi-field-form</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST multi-field-form" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/multi-field-form</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -456,12 +490,12 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">applicantBusinessAddress__addressLine1</stringProp>
               </elementProp>
-              <elementProp name="applicantBusinessAddress__addressLine1" elementType="HTTPArgument">
+              <elementProp name="applicantBusinessAddress__addressLine2" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.value">Cogenhoe</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                <stringProp name="Argument.name">applicantBusinessAddress__addressLine1</stringProp>
+                <stringProp name="Argument.name">applicantBusinessAddress__addressLine2</stringProp>
               </elementProp>
               <elementProp name="applicantBusinessAddress__town" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
@@ -488,8 +522,8 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /example-grant-with-auth/summary">
-          <stringProp name="HTTPSampler.path">/example-grant-with-auth/summary</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST summary" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/summary</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -503,12 +537,24 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">crumb</stringProp>
               </elementProp>
-              <elementProp name="action" elementType="HTTPArgument">
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST declaration" enabled="true">
+          <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/declaration</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="crumb" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                <stringProp name="Argument.value">send</stringProp>
+                <stringProp name="Argument.value">${CRUMB}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
-                <stringProp name="Argument.name">action</stringProp>
+                <stringProp name="Argument.name">crumb</stringProp>
               </elementProp>
             </collectionProp>
           </elementProp>
