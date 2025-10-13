@@ -95,7 +95,7 @@ props.setProperty(&apos;accumulatedResponseTimeMs&apos;, &apos;0&apos;)</stringP
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">// config
-long maxResponseTimeMs = 10L
+long maxResponseTimeMs = 3000L
 long minimumSampleSize = 20L
 
 // accumulate request count and response times
