@@ -98,6 +98,11 @@ props.setProperty(&apos;accumulatedResponseTimeMs&apos;, &apos;0&apos;)</stringP
 long maxResponseTimeMs = 3000L
 long minimumSampleSize = 20L
 
+// skip Defra ID stub requests
+if (prev.getUrlAsString().contains(&quot;fcp-defra-id-stub&quot;)) {
+	return
+}
+
 // accumulate request count and response times
 def lock = &apos;accumulationLock&apos;.intern()
 synchronized (lock) {
