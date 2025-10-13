@@ -118,7 +118,7 @@ synchronized (lock) {
 	// assert
 	if (accumulatedRequestCount &gt; minimumSampleSize &amp;&amp; averageResponseTimeMs &gt; maxResponseTimeMs) {
 		AssertionResult.setFailure(true);
-		AssertionResult.setFailureMessage(&apos;Average response time of &apos; + averageResponseTimeMs + &apos; ms exceeds threshold&apos;)
+		AssertionResult.setFailureMessage(&apos;Average response time exceeds &apos; + maxResponseTimeMs + &apos; ms threshold&apos;)
 	}
 }
 </stringProp>
