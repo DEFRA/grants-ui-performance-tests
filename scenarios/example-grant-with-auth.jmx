@@ -99,7 +99,7 @@ long maxResponseTimeMs = 3000L
 long minimumSampleSize = 20L
 
 // skip Defra ID stub requests
-if (prev.getUrlAsString().contains(&quot;fcp-defra-id-stub&quot;)) {
+if (prev.getSampleLabel().contains(&quot;Defra ID Stub&quot;)) {
 	return
 }
 
