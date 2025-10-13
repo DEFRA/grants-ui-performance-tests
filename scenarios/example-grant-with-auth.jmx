@@ -6,7 +6,6 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
-      <boolProp name="TestPlan.functional_mode">false</boolProp>
     </TestPlan>
     <hashTree>
       <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config">
@@ -40,7 +39,7 @@
         <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
       </CookieManager>
       <hashTree/>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Initialize Counters" enabled="true">
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -49,20 +48,16 @@
           <stringProp name="LoopController.loops">1</stringProp>
           <boolProp name="LoopController.continue_forever">false</boolProp>
         </elementProp>
-      </ThreadGroup>
+      </SetupThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Initialize Average Response Time Counters" enabled="true">
-          <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="filename"></stringProp>
-          <stringProp name="parameters"></stringProp>
-          <stringProp name="script">import org.apache.jmeter.util.JMeterUtils;
-
-JMeterUtils.setProperty(&quot;requestCount&quot;, String.valueOf(0));
-JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(0));
-log.info(&quot;Initialize Average Response Time counter properties&quot;);
-
-SampleResult.setIgnore();</stringProp>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Create Response Time Counters">
           <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">// global accumulators shared across all threads and thread groups
+props.setProperty(&apos;accumulatedRequestCount&apos;, &apos;0&apos;)
+props.setProperty(&apos;accumulatedResponseTimeMs&apos;, &apos;0&apos;)</stringProp>
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
@@ -93,37 +88,42 @@ SampleResult.setIgnore();</stringProp>
           <intProp name="Assertion.test_type">16</intProp>
         </ResponseAssertion>
         <hashTree/>
-        <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Rolling Average Response Time Assertion">
-          <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="filename"></stringProp>
-          <stringProp name="parameters"></stringProp>
-          <stringProp name="script">import org.apache.jmeter.util.JMeterUtils;
-
-long thresholdMs = 3000;
-long minimumSampleSize = 50;
-long requestCount = JMeterUtils.getPropDefault(&quot;requestCount&quot;, 0);
-long totalResponseTimeMs = JMeterUtils.getPropDefault(&quot;totalResponseTimeMs&quot;, 0);
-
-requestCount++;
-totalResponseTimeMs += SampleResult.getTime();
-
-long averageResponseTimeMs = totalResponseTimeMs / requestCount;
-
-if (requestCount &gt;= minimumSampleSize) {
-    if (averageResponseTimeMs &gt; thresholdMs) {
-        AssertionResult.setFailure(true);
-        AssertionResult.setFailureMessage(&quot;Average response time &quot; + averageResponseTimeMs + &quot; ms exceeds threshold &quot; + thresholdMs + &quot; ms&quot;);
-    }
-    
-    log.info(&quot;Average response time after &quot; + requestCount + &quot; requests: &quot; + averageResponseTimeMs + &quot; ms&quot;);
-}
-
-JMeterUtils.setProperty(&quot;requestCount&quot;, String.valueOf(requestCount));
-JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalResponseTimeMs));</stringProp>
+        <JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Rolling Response Time Assertion">
           <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">// config
+long maxResponseTimeMs = 3000L
+long minimumSampleSize = 20L
+
+// accumulate request count and response times
+def lock = &apos;accumulationLock&apos;.intern()
+synchronized (lock) {
+	// get response time
+	long responseTime = prev.getTime()
+	log.info(&apos;Individual response time: &apos; + responseTime + &apos; ms&apos;)
+
+	// update counters
+	long accumulatedRequestCount = (props.getProperty(&apos;accumulatedRequestCount&apos;,&apos;0&apos;) as long) + 1L
+	long accumulatedResponseTimeMs = (props.getProperty(&apos;accumulatedResponseTimeMs&apos;,&apos;0&apos;) as long) + responseTime
+	props.setProperty(&apos;accumulatedRequestCount&apos;,   String.valueOf(accumulatedRequestCount))
+	props.setProperty(&apos;accumulatedResponseTimeMs&apos;, String.valueOf(accumulatedResponseTimeMs))
+
+	// calculate latest average response time
+	long averageResponseTimeMs = accumulatedResponseTimeMs / accumulatedRequestCount
+	log.info(&apos;Average response time is now: &apos; + averageResponseTimeMs + &apos; ms over &apos; + accumulatedRequestCount + &apos; requests&apos;)
+
+	// assert
+	if (accumulatedRequestCount &gt; minimumSampleSize &amp;&amp; averageResponseTimeMs &gt; maxResponseTimeMs) {
+		AssertionResult.setFailure(true);
+		AssertionResult.setFailureMessage(&apos;Average response time of &apos; + averageResponseTimeMs + &apos; ms exceeds threshold&apos;)
+	}
+}
+</stringProp>
         </JSR223Assertion>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET start" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET start">
           <stringProp name="HTTPSampler.path">https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
@@ -134,7 +134,7 @@ JMeterUtils.setProperty(&quot;totalResponseTimeMs&quot;, String.valueOf(totalRes
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Defra ID Stub Login" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Defra ID Stub Login">
           <stringProp name="HTTPSampler.path">https://fcp-defra-id-stub.perf-test.cdp-int.defra.cloud/dcidmtest.onmicrosoft.com/oauth2/authresp</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
