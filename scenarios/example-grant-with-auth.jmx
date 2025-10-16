@@ -21,6 +21,16 @@
             <stringProp name="Argument.value">${__P(user_count,100)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="csv_recycle_on_eof" elementType="Argument">
+            <stringProp name="Argument.name">csv_recycle_on_eof</stringProp>
+            <stringProp name="Argument.value">${__P(csv_recycle_on_eof,true)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="csv_stop_thread_on_eof" elementType="Argument">
+            <stringProp name="Argument.name">csv_stop_thread_on_eof</stringProp>
+            <stringProp name="Argument.value">${__P(csv_stop_thread_on_eof,false)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
         </collectionProp>
       </Arguments>
       <hashTree/>
@@ -30,9 +40,9 @@
         <stringProp name="filename">users.csv</stringProp>
         <boolProp name="ignoreFirstLine">false</boolProp>
         <boolProp name="quotedData">false</boolProp>
-        <boolProp name="recycle">true</boolProp>
+        <boolProp name="recycle">${csv_recycle_on_eof}</boolProp>
         <stringProp name="shareMode">shareMode.all</stringProp>
-        <boolProp name="stopThread">false</boolProp>
+        <boolProp name="stopThread">${csv_stop_thread_on_eof}</boolProp>
         <stringProp name="variableNames">CRN</stringProp>
       </CSVDataSet>
       <hashTree/>
