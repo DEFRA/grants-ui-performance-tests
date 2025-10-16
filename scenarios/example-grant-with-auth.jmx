@@ -21,21 +21,6 @@
             <stringProp name="Argument.value">${__P(duration_seconds,180)}</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
-          <elementProp name="rampup_seconds" elementType="Argument">
-            <stringProp name="Argument.name">rampup_seconds</stringProp>
-            <stringProp name="Argument.value">30</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="csv_recycle_on_eof" elementType="Argument">
-            <stringProp name="Argument.name">csv_recycle_on_eof</stringProp>
-            <stringProp name="Argument.value">${__P(csv_recycle_on_eof,true)}</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
-          <elementProp name="csv_stop_thread_on_eof" elementType="Argument">
-            <stringProp name="Argument.name">csv_stop_thread_on_eof</stringProp>
-            <stringProp name="Argument.value">${__P(csv_stop_thread_on_eof,false)}</stringProp>
-            <stringProp name="Argument.metadata">=</stringProp>
-          </elementProp>
         </collectionProp>
       </Arguments>
       <hashTree/>
@@ -45,9 +30,9 @@
         <stringProp name="filename">users.csv</stringProp>
         <boolProp name="ignoreFirstLine">false</boolProp>
         <boolProp name="quotedData">false</boolProp>
-        <boolProp name="recycle">${csv_recycle_on_eof}</boolProp>
+        <boolProp name="recycle">true</boolProp>
         <stringProp name="shareMode">shareMode.all</stringProp>
-        <boolProp name="stopThread">${csv_stop_thread_on_eof}</boolProp>
+        <boolProp name="stopThread">false</boolProp>
         <stringProp name="variableNames">CRN</stringProp>
       </CSVDataSet>
       <hashTree/>
@@ -94,7 +79,7 @@ props.setProperty(&apos;accumulatedResponseTimeMs&apos;, &apos;0&apos;)</stringP
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="example-grant-with-auth">
         <stringProp name="ThreadGroup.num_threads">${user_count}</stringProp>
-        <intProp name="ThreadGroup.ramp_time">${rampup_seconds}</intProp>
+        <intProp name="ThreadGroup.ramp_time">30</intProp>
         <stringProp name="ThreadGroup.duration">${duration_seconds}</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>

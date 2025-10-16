@@ -5,16 +5,7 @@ This performance test suite is maintained by Grants Application Enablement (GAE)
 - Non-land based grant application journeys served by `grants-ui`
 - General `grants-ui` components maintained by GAE
 
-There is an individual test plan for each grant in the `/scenarios` directory. To run a specific test plan in CI edit the `TEST_SCENARIO` environment variable set in the Dockerfile.
-
-Each test plan will:
-
-- Run for 180 seconds
-- Ramp up to 3 threads following the full grant journey with a 3 second interval between interactions
-- Assert that all requests receive an HTTP 200 Ok response
-- Assert that the average response time is under 3000 ms
-
-The intention is to prevent an unexpected performance regression being introduced to the service.
+There are individual test plans for distinct grants in the `/scenarios` directory. To run a specific test plan in CI edit the `TEST_SCENARIO` environment variable set in the Dockerfile.
 
 ### Running locally
 

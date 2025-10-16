@@ -22,10 +22,7 @@ LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
 jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f \
    -Jenv="${ENVIRONMENT}" \
    -Juser_count="${USER_COUNT}" \
-   -Jduration_seconds="${DURATION_SECONDS}" \
-   -Jrampup_seconds="${RAMPUP_SECONDS}" \
-   -Jcsv_recycle_on_eof="${CSV_RECYCLE_ON_EOF}" \
-   -Jcsv_stop_thread_on_eof="${CSV_STOP_THREAD_ON_EOF}"
+   -Jduration_seconds="${DURATION_SECONDS}"
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
 if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
