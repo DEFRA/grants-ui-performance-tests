@@ -22,8 +22,8 @@ LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
 jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f \
    -Jenv="${ENVIRONMENT}" \
    -Juser_count="${USER_COUNT}" \
-   -Jduration_seconds=${DURATION_SECONDS} \
-   -Jrampup_seconds="${RAMPUP_SECONDS}" \
+   -Jduration_seconds="${DURATION_SECONDS}" \
+   -Jrampup_seconds=${RAMPUP_SECONDS} \
    -Jcsv_recycle_on_eof="${CSV_RECYCLE_ON_EOF}" \
    -Jcsv_stop_thread_on_eof="${CSV_STOP_THREAD_ON_EOF}"
 
