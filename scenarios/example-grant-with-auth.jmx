@@ -4,7 +4,33 @@
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="Grants">
       <boolProp name="TestPlan.serialize_threadgroups">true</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-        <collectionProp name="Arguments.arguments"/>
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="RAMPUP_SECONDS" elementType="Argument">
+            <stringProp name="Argument.name">RAMPUP_SECONDS</stringProp>
+            <stringProp name="Argument.value">${__P(RAMPUP_SECONDS,30)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="THREAD_COUNT" elementType="Argument">
+            <stringProp name="Argument.name">THREAD_COUNT</stringProp>
+            <stringProp name="Argument.value">${__P(THREAD_COUNT,100)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="DURATION_SECONDS" elementType="Argument">
+            <stringProp name="Argument.name">DURATION_SECONDS</stringProp>
+            <stringProp name="Argument.value">${__P(DURATION_SECONDS,180)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="CSV_RECYCLE_ON_EOF" elementType="Argument">
+            <stringProp name="Argument.name">CSV_RECYCLE_ON_EOF</stringProp>
+            <stringProp name="Argument.value">${__P(CSV_RECYCLE_ON_EOF,true)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="CSV_STOP_ON_EOF" elementType="Argument">
+            <stringProp name="Argument.name">CSV_STOP_ON_EOF</stringProp>
+            <stringProp name="Argument.value">${__P(CSV_STOP_ON_EOF,false)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
       </elementProp>
     </TestPlan>
     <hashTree>
@@ -14,9 +40,11 @@
         <stringProp name="filename">users.csv</stringProp>
         <boolProp name="ignoreFirstLine">false</boolProp>
         <boolProp name="quotedData">false</boolProp>
-        <boolProp name="recycle">true</boolProp>
+        <!-- IMPORTANT: recycle must remain a stringProp (not boolProp) to work with user defined variable -->
+        <stringProp name="recycle">${CSV_RECYCLE_ON_EOF}</stringProp>
         <stringProp name="shareMode">shareMode.all</stringProp>
-        <boolProp name="stopThread">false</boolProp>
+        <!-- IMPORTANT: stopThread must remain a stringProp (not boolProp) to work with user defined variable -->
+        <stringProp name="stopThread">${CSV_STOP_ON_EOF}</stringProp>
         <stringProp name="variableNames">CRN</stringProp>
       </CSVDataSet>
       <hashTree/>
@@ -62,9 +90,12 @@ props.setProperty(&apos;accumulatedResponseTimeMs&apos;, &apos;0&apos;)</stringP
         <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="example-grant-with-auth">
-        <intProp name="ThreadGroup.num_threads">100</intProp>
-        <intProp name="ThreadGroup.ramp_time">30</intProp>
-        <longProp name="ThreadGroup.duration">180</longProp>
+        <!-- IMPORTANT: ThreadGroup.num_threads must remain a stringProp (not intProp) to work with user defined variable -->
+        <stringProp name="ThreadGroup.num_threads">${THREAD_COUNT}</stringProp>
+        <!-- IMPORTANT: ThreadGroup.ramp_time must remain a stringProp (not intProp) to work with user defined variable -->
+        <stringProp name="ThreadGroup.ramp_time">${RAMPUP_SECONDS}</stringProp>
+        <!-- IMPORTANT: ThreadGroup.duration must remain a stringProp (not longProp) to work with user defined variable -->
+        <stringProp name="ThreadGroup.duration">${DURATION_SECONDS}</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>

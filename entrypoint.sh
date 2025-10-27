@@ -19,7 +19,13 @@ REPORTFILE=${NOW}-perftest-${TEST_SCENARIO}-report.csv
 LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
 
 # Run the test suite
-jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f -Jenv="${ENVIRONMENT}"
+jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f \
+  -Jenv="${ENVIRONMENT}" \
+  -JRAMPUP_SECONDS="${RAMPUP_SECONDS}" \
+  -JTHREAD_COUNT="${THREAD_COUNT}" \
+  -JDURATION_SECONDS="${DURATION_SECONDS}" \
+  -JCSV_RECYCLE_ON_EOF="${CSV_RECYCLE_ON_EOF}" \
+  -JCSV_STOP_ON_EOF="${CSV_STOP_ON_EOF}"
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
 if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
