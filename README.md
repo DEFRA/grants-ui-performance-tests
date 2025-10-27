@@ -8,7 +8,7 @@ Performance test suite for Defra's [grants-ui](https://github.com/DEFRA/grants-u
 
 The suite provides performance testing for:
 - Non-land based grant application journeys served by `grants-ui`
-- General `grants-ui` components maintained
+- Reusable `grants-ui` components
 
 ## Technology Stack
 
@@ -23,11 +23,11 @@ Current test plans:
 
 ## Test Execution Styles
 
-The test plans support two distinct execution styles aligned with the Non-Functional Requirements (NFRs) for grant applications.
+Test plans support two distinct execution styles aligned with the Non-Functional Requirements (NFRs) for grant applications:
 
 ### Response Time Testing
 
-**Purpose:** Measure average response times under maximum load conditions
+**Purpose:** Measure average response times under maximum load conditions.
 
 **Configuration:**
 - Duration: 180 seconds (3 minutes)
@@ -49,7 +49,7 @@ This test runs as many journeys as possible within the time limit, recycling thr
 
 ### Scalability Testing
 
-**Purpose:** Verify system can handle the target number of individual user journeys
+**Purpose:** Verify system can handle the target number of individual user journeys.
 
 **Configuration:**
 - Duration: 3600 seconds (1 hour)
@@ -77,7 +77,7 @@ Each test plan includes:
 - Validates all responses return HTTP 200
 
 **Rolling Response Time Assertion:**
-- Monitors average response time across all requests (excluding Defra ID Stub)
+- Monitors average response time across all requests (excluding Defra ID stub)
 - Fails if average exceeds 3000ms threshold after minimum 20 samples
 
 ### Configuration Parameters
@@ -90,7 +90,7 @@ All test plans are parameterized via environment variables, set as secrets in th
 | `THREAD_COUNT` | `100` | Number of concurrent threads (virtual users) |
 | `DURATION_SECONDS` | `180` | Total test duration in seconds |
 | `CSV_RECYCLE_ON_EOF` | `true` | Whether to recycle CSV user data when reaching end of file |
-| `CSV_STOP_ON_EOF` | `false` | Whether to stop threads when reaching end of user CSV file |
+| `CSV_STOP_ON_EOF` | `false` | Whether to stop threads when reaching end of  CSV file |
 
 ## Running Tests
 
@@ -99,7 +99,7 @@ All test plans are parameterized via environment variables, set as secrets in th
 Tests are executed from the CDP Portal under the **Test Suites** section for the **Perf-Test** environment.
 
 **Prerequisites:**
-Environment variables must be configured as secrets in the CDP Portal for the Perf-Test environment
+Environment variables must be configured as secrets in the CDP Portal for the **Perf-Test** environment
 
 **Execution:**
 1. Navigate to Test Suites in the CDP Portal.
@@ -146,7 +146,7 @@ Use the JMeter GUI for local development and debugging:
 
 ## Test Data
 
-The `users.csv` file contains Customer Reference Numbers (CRNs) for 700 unique test users. These users match the 700 available users in the `fcp-defra-id-stub` service in `Perf-Test`.
+The `users.csv` file contains Customer Reference Numbers (CRNs) for 700 unique test users. These users match the 700 available users in the `fcp-defra-id-stub` service in **Perf-Test**.
 
 **Format:**
 ```csv
@@ -200,7 +200,7 @@ XML comments are included in the test plans as reminders. After saving changes i
 
 ## Related Repositories
 
-- [grants-ui](https://github.com/DEFRA/grants-ui) - Main grants application UI service
+- [grants-ui](https://github.com/DEFRA/grants-ui) - Grants application frontend service
 - [grants-ui-backend](https://github.com/DEFRA/grants-ui-backend) - Backend service, included in the scope of these tests
 - [ffc-defra-id-stub](https://github.com/DEFRA/ffc-defra-id-stub) - Authentication stub for testing
 
