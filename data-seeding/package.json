@@ -1,0 +1,26 @@
+{
+  "name": "grants-ui-backend-seeding",
+  "version": "1.0.0",
+  "description": "Data seeding script for grants-ui-backend service",
+  "type": "module",
+  "main": "seed-grants-ui-backend.js",
+  "scripts": {
+    "seed": "node seed-grants-ui-backend.js",
+    "seed:dev": "NODE_ENV=development node seed-grants-ui-backend.js",
+    "seed:prod": "NODE_ENV=production node seed-grants-ui-backend.js"
+  },
+  "keywords": [
+    "seeding",
+    "data",
+    "grants",
+    "performance-testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
