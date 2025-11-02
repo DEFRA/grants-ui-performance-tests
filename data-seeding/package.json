@@ -4,11 +4,6 @@
   "description": "Data seeding script for grants-ui-backend service",
   "type": "module",
   "main": "seed-grants-ui-backend.js",
-  "scripts": {
-    "seed": "node seed-grants-ui-backend.js",
-    "seed:dev": "NODE_ENV=development node seed-grants-ui-backend.js",
-    "seed:prod": "NODE_ENV=production node seed-grants-ui-backend.js"
-  },
   "keywords": [
     "seeding",
     "data",

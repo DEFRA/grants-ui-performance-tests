@@ -135,7 +135,7 @@ Use the JMeter GUI for local development and debugging:
 ## Project Structure
 
 ```
-.
+grants-ui-performance-tests/
 ├── scenarios/             # JMeter test plans (.jmx files)
 │   └── example-grant-with-auth.jmx
 │   └── users.csv          # User data (CRNs for authentication)
