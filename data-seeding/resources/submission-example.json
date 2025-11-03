@@ -1,0 +1,8 @@
+{
+  "crn": "{{CRN}}",
+  "sbi": "{{SBI}}",
+  "grantCode": "{{GRANT_CODE}}",
+  "grantVersion": 1,
+  "referenceNumber": "{{REFERENCE_NUMBER}}",
+  "submittedAt": "{{TIMESTAMP}}"
+}

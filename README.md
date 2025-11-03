@@ -135,10 +135,11 @@ Use the JMeter GUI for local development and debugging:
 ## Project Structure
 
 ```
-.
+grants-ui-performance-tests/
 ├── scenarios/             # JMeter test plans (.jmx files)
 │   └── example-grant-with-auth.jmx
 │   └── users.csv          # User data (CRNs for authentication)
+├── data-seeding/          # Tools for seeding backend test data
 ├── Dockerfile             # Container image definition
 ├── entrypoint.sh          # Test execution script
 └── README.md
@@ -197,6 +198,10 @@ XML comments are included in the test plans as reminders. After saving changes i
 **Manual Execution:**
 - Tests can be triggered on-demand via CDP Portal
 - Environment-specific configurations are managed as CDP Portal secrets
+
+## Data Seeding
+
+You may want to seed the `grants-ui-backend` MongoDB database with test data to replicate querying over a large dataset. The [data-seeding](data-seeding/README.md) directory contains tools to generate and import test documents.
 
 ## Related Repositories
 
