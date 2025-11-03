@@ -11,7 +11,7 @@ The script reads a CSV file of users and generates two JSONL (JSON Lines) files 
 ```
 data-seeding/
 ├── seed-grants-ui-backend.js      # Main script to generate JSONL files
-├── package.json                   # Dependencies
+├── package.json                   # Project metadata (no dependencies required)
 ├── resources/                     # Input files
 │   ├── users.csv                  # CSV of users (CRN, SBI)
 │   ├── state-example.json         # Template for grant-application-state documents
@@ -59,16 +59,10 @@ JSON template for documents in the `grant_application_submissions` collection. U
 
 ## Setup
 
-1. Install dependencies:
-   ```bash
-   cd data-seeding
-   npm install
-   ```
-
-2. Ensure input files are in place:
-   - `resources/users.csv` - User data (currently 20,000 users)
-   - `resources/state-example.json` - Template for state documents
-   - `resources/submission-example.json` - Template for submission documents
+Ensure input files are in place:
+- `resources/users.csv` - User data (currently 20,000 users)
+- `resources/state-example.json` - Template for state documents
+- `resources/submission-example.json` - Template for submission documents
 
 ## Usage
 
