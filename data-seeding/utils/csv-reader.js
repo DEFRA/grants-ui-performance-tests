@@ -40,15 +40,3 @@ export async function readCSV(relativePath) {
     throw new Error(`Failed to read CSV file: ${error.message}`);
   }
 }
-
-/**
- * Gets a random item from the CSV data
- * @param {Array<Object>} csvData - Parsed CSV data
- * @returns {Object} Random row from CSV
- */
-export function getRandomRow(csvData) {
-  if (!csvData || csvData.length === 0) {
-    throw new Error('CSV data is empty');
-  }
-  return csvData[Math.floor(Math.random() * csvData.length)];
-}
