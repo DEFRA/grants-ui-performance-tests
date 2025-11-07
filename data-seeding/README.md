@@ -93,6 +93,8 @@ Upload the files in the `upload/` directory to the CDP terminal:
 - `state-documents.jsonl`
 - `submission-documents.jsonl`
 
+**Note:** When using the CDP Terminal, Firefox is recommended over Chrome. Firefox maintains the connection more reliably during long-running operations, where Chrome has a tendency to close the connection prematurely.
+
 ### Step 3: Import to MongoDB
 
 After uploading to the CDP terminal, make the bash script executable and run the imports:
