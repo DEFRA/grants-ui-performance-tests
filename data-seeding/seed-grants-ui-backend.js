@@ -39,7 +39,7 @@ async function seedData() {
     console.log('Starting mongosh insert script generation...')
 
     // Load input files
-    const users = await readCSV('./resources/users.csv')
+    const users = await readCSV('./resources/import-users.csv')
 
     const stateTemplate = await readTemplate('state-example.json')
     const submissionTemplate = await readTemplate('submission-example.json')
@@ -62,16 +62,15 @@ async function seedData() {
     }
     console.log('Cleared JSONL files from upload directory')
 
-    // Open JSONL output files for writing
-    const stateOutputPath = path.join(uploadPath, 'state-documents.jsonl')
-    const submissionOutputPath = path.join(uploadPath, 'submission-documents.jsonl')
-
     const grantCodes = ['adding-value', 'laying-hens']
+    const BATCH_SIZE = 10000
 
-    // Create write streams for JSONL files
-    const stateLines = []
-    const submissionLines = []
-    let documentCount = 0
+    // Create arrays to hold current batch of lines
+    let stateLines = []
+    let submissionLines = []
+    let batchNumber = 1
+    let totalStateDocuments = 0
+    let totalSubmissionDocuments = 0
 
     // Process each user
     for (const user of users) {
@@ -100,17 +99,47 @@ async function seedData() {
         })
         submissionLines.push(JSON.stringify(submissionDoc))
 
-        documentCount++
+        // Write batch if we've reached BATCH_SIZE
+        if (stateLines.length >= BATCH_SIZE) {
+          const stateOutputPath = path.join(uploadPath, `state-documents-${batchNumber}.jsonl`)
+          const submissionOutputPath = path.join(uploadPath, `submission-documents-${batchNumber}.jsonl`)
+
+          await fs.writeFile(stateOutputPath, stateLines.join('\n'), 'utf-8')
+          await fs.writeFile(submissionOutputPath, submissionLines.join('\n'), 'utf-8')
+
+          console.log(`Batch ${batchNumber}: Wrote ${stateLines.length} documents to each file`)
+
+          totalStateDocuments += stateLines.length
+          totalSubmissionDocuments += submissionLines.length
+
+          stateLines = []
+          submissionLines = []
+          batchNumber++
+        }
       }
     }
 
-    // Write JSONL files (one JSON document per line)
-    await fs.writeFile(stateOutputPath, stateLines.join('\n'), 'utf-8')
-    await fs.writeFile(submissionOutputPath, submissionLines.join('\n'), 'utf-8')
+    // Write any remaining documents in the last batch
+    if (stateLines.length > 0) {
+      const stateOutputPath = path.join(uploadPath, `state-documents-${batchNumber}.jsonl`)
+      const submissionOutputPath = path.join(uploadPath, `submission-documents-${batchNumber}.jsonl`)
 
+      await fs.writeFile(stateOutputPath, stateLines.join('\n'), 'utf-8')
+      await fs.writeFile(submissionOutputPath, submissionLines.join('\n'), 'utf-8')
+
+      console.log(`Batch ${batchNumber}: Wrote ${stateLines.length} documents to each file`)
+
+      totalStateDocuments += stateLines.length
+      totalSubmissionDocuments += submissionLines.length
+      batchNumber++
+    }
+
+    const totalFiles = batchNumber - 1
+
+    console.log('')
     console.log('JSONL files generated!')
-    console.log(`Generated ${stateLines.length} state documents in state-documents.jsonl`)
-    console.log(`Generated ${submissionLines.length} submission documents in submission-documents.jsonl`)
+    console.log(`Total state documents: ${totalStateDocuments} across ${totalFiles} file(s)`)
+    console.log(`Total submission documents: ${totalSubmissionDocuments} across ${totalFiles} file(s)`)
 
     process.exit(0)
   } catch (error) {

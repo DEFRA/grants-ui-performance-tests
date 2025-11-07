@@ -13,7 +13,7 @@ data-seeding/
 ├── seed-grants-ui-backend.js      # Main script to generate JSONL files
 ├── package.json                   # Project metadata (no dependencies required)
 ├── resources/                     # Input files
-│   ├── users.csv                  # CSV of users (CRN, SBI)
+│   ├── import-users.csv           # CSV of users (CRN, SBI)
 │   ├── state-example.json         # Template for grant-application-state documents
 │   └── submission-example.json    # Template for grant_submission_state documents
 ├── upload/                        # Files to upload in CDP terminal
@@ -26,7 +26,7 @@ data-seeding/
 
 ## Input Files
 
-### users.csv
+### import-users.csv
 CSV file with user data containing two columns:
 - `CRN`: Customer Reference Number
 - `SBI`: Single Business Identifier
@@ -60,7 +60,7 @@ JSON template for documents in the `grant_application_submissions` collection. U
 ## Setup
 
 Ensure input files are in place:
-- `resources/users.csv` - User data (currently 20,000 users)
+- `resources/import-users.csv` - User data (currently 20,000 users)
 - `resources/state-example.json` - Template for state documents
 - `resources/submission-example.json` - Template for submission documents
 
@@ -75,7 +75,7 @@ node seed-grants-ui-backend.js
 ```
 
 This will:
-1. Read 20,000 users from `users.csv`
+1. Read 20,000 users from `import-users.csv`
 2. Load the JSON templates
 3. Generate documents for 2 grants per user (adding-value, laying-hens)
 4. Write JSONL files and the import script to the `upload/` directory
@@ -101,7 +101,7 @@ After uploading to the CDP terminal, make the bash script executable and run the
 # Make the script executable (required after upload)
 chmod 777 import-jsonl.sh
 
-# Import state documents (uses default chunk size of 1000)
+# Import state documents (uses default chunk size of 100)
 ./import-jsonl.sh grant-application-state state-documents.jsonl
 
 # Import submission documents with custom chunk size
@@ -113,7 +113,7 @@ chmod 777 import-jsonl.sh
 The `import-jsonl.sh` script accepts:
 - **Argument 1**: Collection name - MongoDB collection name (required)
 - **Argument 2**: JSONL file - Path to JSONL file to import (required)
-- **Argument 3**: Chunk size - Number of documents per chunk (optional, default: 1000)
+- **Argument 3**: Chunk size - Number of documents per chunk (optional, default: 100)
 
 **How it works:**
 1. Splits the JSONL file into chunks of the specified size

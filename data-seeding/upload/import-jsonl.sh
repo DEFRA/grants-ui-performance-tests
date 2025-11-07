@@ -12,7 +12,7 @@ if [ $# -lt 2 ]; then
     echo "Arguments:"
     echo "  collection-name - MongoDB collection name"
     echo "  jsonl-file      - Path to JSONL file to import"
-    echo "  chunk-size      - Number of documents per chunk (optional, default: 1000)"
+    echo "  chunk-size      - Number of documents per chunk (optional, default: 100)"
     echo ""
     echo "Examples:"
     echo "  $0 grant-application-state state-documents.jsonl"
@@ -22,7 +22,7 @@ fi
 
 COLLECTION=$1
 JSONL_FILE=$2
-CHUNK_SIZE=${3:-1000}
+CHUNK_SIZE=${3:-100}
 
 # Validate input file exists
 if [ ! -f "$JSONL_FILE" ]; then
