@@ -27,7 +27,7 @@ Test plans support two distinct execution styles aligned with the Non-Functional
 
 ### Response Time Testing
 
-**Purpose:** Measure average response times under maximum load conditions.
+**Purpose:** Observe response times under maximum load conditions.
 
 **Configuration:**
 - Duration: 180 seconds (3 minutes)
@@ -38,11 +38,11 @@ Test plans support two distinct execution styles aligned with the Non-Functional
 **Environment variables:**
 ```bash
 # set in CDP portal
-RAMPUP_SECONDS=30
-THREAD_COUNT=100
-DURATION_SECONDS=180
 CSV_RECYCLE_ON_EOF=true
 CSV_STOP_ON_EOF=false
+DURATION_SECONDS=180
+RAMPUP_SECONDS=30
+THREAD_COUNT=100
 ```
 
 This test runs as many journeys as possible within the time limit, recycling through the available test users to maintain consistent load.
@@ -53,18 +53,18 @@ This test runs as many journeys as possible within the time limit, recycling thr
 
 **Configuration:**
 - Duration: 3600 seconds (1 hour)
-- Ramp-up: 3600 seconds (gradual increase over full duration)
+- Ramp-up: 3600 seconds (gradual increase over duration)
 - Concurrent users: 50 (max concurrent)
 - User behavior: No recycling (700 unique journeys, one per user)
 
 **Environment variables:**
 ```bash
 # set in CDP portal
+CSV_RECYCLE_ON_EOF=false
+CSV_STOP_ON_EOF=true
+DURATION_SECONDS=3600
 RAMPUP_SECONDS=3600
 THREAD_COUNT=50
-DURATION_SECONDS=3600
-CSV_RECYCLE_ON_EOF=false
-CSV_STOP_ON_EOF=false
 ```
 
 This test executes exactly 700 individual user journeys (one per user in `users.csv`), ramping up gradually to a maximum of 50 concurrent users over the hour.
@@ -74,11 +74,11 @@ This test executes exactly 700 individual user journeys (one per user in `users.
 Each test plan includes:
 
 **Response Status Code Assertion:**
-- Validates all responses return HTTP 200
+- Validates all responses return HTTP 200 success
+- The test plan follows redirects automatically (302s are handled transparently) and only validates the final response code
 
-**Rolling Response Time Assertion:**
-- Monitors average response time across all requests (excluding Defra ID stub)
-- Fails if average exceeds 3000ms threshold after minimum 20 samples
+**Reference Number Assertion:**
+- Validates all submissions return a response containing a valid reference number to indicate successful submission to GAS
 
 ### Configuration Parameters
 
@@ -86,11 +86,11 @@ All test plans are parameterized via environment variables, set as secrets in th
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `RAMPUP_SECONDS` | `30` | Time to ramp up to target thread count |
-| `THREAD_COUNT` | `100` | Number of concurrent threads (virtual users) |
-| `DURATION_SECONDS` | `180` | Total test duration in seconds |
 | `CSV_RECYCLE_ON_EOF` | `true` | Whether to recycle CSV user data when reaching end of file |
 | `CSV_STOP_ON_EOF` | `false` | Whether to stop threads when reaching end of  CSV file |
+| `DURATION_SECONDS` | `180` | Total test duration in seconds |
+| `RAMPUP_SECONDS` | `30` | Time to ramp up to target thread count |
+| `THREAD_COUNT` | `100` | Number of concurrent threads (virtual users) |
 
 ## Running Tests
 
