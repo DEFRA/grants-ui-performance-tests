@@ -201,13 +201,13 @@ XML comments are included in the test plans as reminders. After saving changes i
 
 ## Data Seeding
 
-We seed the `grants-ui-backend` MongoDB database with a year of background data to replicate querying over a large dataset for PRR purposes. The [data-seeding](data-seeding/README.md) directory contains a script to generate JSONL files that can be embedded in a 1grants-ui-backend1 hot fix release for direct MongoDB import.
+We seed the `grants-ui-backend` MongoDB database with a year of background data to replicate querying over a large dataset for PRR purposes. The [data-seeding](data-seeding/README.md) directory contains a script to generate JSONL files that can be embedded in a `grants-ui-backend` hot fix release for direct MongoDB import.
 
 ## Related Repositories
 
 - [grants-ui](https://github.com/DEFRA/grants-ui) - Grants application frontend service
 - [grants-ui-backend](https://github.com/DEFRA/grants-ui-backend) - Backend service, included in the scope of these tests
-- [ffc-defra-id-stub](https://github.com/DEFRA/ffc-defra-id-stub) - Authentication stub for testing
+- [fcp-defra-id-stub](https://github.com/DEFRA/fcp-defra-id-stub) - Authentication stub for testing
 
 ## Support
 
