@@ -1,32 +1,31 @@
 # Seeding grants-ui-backend data
 
-This directory contains a Node.js script for generating JSONL files and a bash script for importing them into MongoDB using mongosh with chunked insertMany operations.
+This directory contains a Node.js script for generating JSONL files that can be embedded in a `grants-ui-backend` hot fix release for direct MongoDB import. We seed the `grants-ui-backend` database with a year of background data to replicate querying over a large dataset for PRR purposes.
 
 ## Overview
 
-The script reads a CSV file of users and generates two JSONL (JSON Lines) files containing test data for the `grant-application-state` and `grant_application_submissions` collections. It creates documents for 2 sample grants (adding-value, laying-hens) per user. A bash script then imports these files in chunks to avoid timeout issues.
+The script reads a CSV file of users and generates two JSON Lines files containing background data for the `grant-application-state` and `grant_application_submissions` collections. It creates documents for 2 sample grants (`adding-value`, `laying-hens`) per user. The generated JSONL files are intended to be embedded in a hot fix release of the `grants-ui-backend` service with a temporary endpoint added that imports them directly into MongoDB.
 
 ## Structure
 
 ```
 data-seeding/
-├── seed-grants-ui-backend.js      # Main script to generate JSONL files
-├── package.json                   # Project metadata (no dependencies required)
-├── resources/                     # Input files
-│   ├── import-users.csv           # CSV of users (CRN, SBI)
-│   ├── state-example.json         # Template for grant-application-state documents
-│   └── submission-example.json    # Template for grant_submission_state documents
-├── upload/                        # Files to upload in CDP terminal
-│   ├── state-documents.jsonl      # JSONL file for grant-application-state
-│   ├── submission-documents.jsonl # JSONL file for grant_application_submissions
-│   └── import-jsonl.sh            # Bash script to import JSONL files in chunks
-└── utils/                         # Helper modules
-    └── csv-reader.js              # CSV parsing utilities
+├── generate-seed-files.js                   # Script to generate JSONL files
+├── package.json                             # Project metadata (no dependencies required)
+├── resources/                               # Input files
+│   ├── seed-users.csv                       # CSV of users (CRN, SBI)
+│   ├── state-example.json                   # Template for grant-application-state documents
+│   └── submission-example.json              # Template for grant_submission_state documents
+├── output/                                  # Generated JSONL files
+│   ├── grant-application-state.jsonl        # JSONL file for grant-application-state collection
+│   └── grant_application_submissions.jsonl  # JSONL file for grant_application_submissions collection
+└── utils/                                   # Helper modules
+    └── csv-reader.js                        # CSV parsing utilities
 ```
 
 ## Input Files
 
-### import-users.csv
+### seed-users.csv
 CSV file with user data containing two columns:
 - `CRN`: Customer Reference Number
 - `SBI`: Single Business Identifier
@@ -60,7 +59,7 @@ JSON template for documents in the `grant_application_submissions` collection. U
 ## Setup
 
 Ensure input files are in place:
-- `resources/import-users.csv` - User data (currently 20,000 users)
+- `resources/seed-users.csv` - User data (currently 20,000 users)
 - `resources/state-example.json` - Template for state documents
 - `resources/submission-example.json` - Template for submission documents
 
@@ -71,57 +70,25 @@ Ensure input files are in place:
 Run the script to generate JSONL files:
 
 ```bash
-node seed-grants-ui-backend.js
+node generate-seed-files.js
 ```
 
 This will:
-1. Read 20,000 users from `import-users.csv`
-2. Load the JSON templates
-3. Generate documents for 2 grants per user (adding-value, laying-hens)
-4. Write JSONL files and the import script to the `upload/` directory
+1. Read 20,000 users from `resources/seed-users.csv`
+2. Load the JSON templates from `resources/`
+3. Generate documents for 2 grants per user (`adding-value`, `laying-hens`)
+4. Write JSONL files to the `output/` directory
 
 **Output:**
-- 40,000 state documents (20,000 users × 2 grants) in `upload/state-documents.jsonl`
-- 40,000 submission documents (20,000 users × 2 grants) in `upload/submission-documents.jsonl`
-- Import script in `upload/import-jsonl.sh`
+- `output/grant-application-state.jsonl` - 40,000 state documents (20,000 users × 2 grants)
+- `output/grant_application_submissions.jsonl` - 40,000 submission documents (20,000 users × 2 grants)
 - Total: 80,000 documents
 
-### Step 2: Upload to CDP Terminal
+### Step 2: Embed in Hot Fix Release
 
-Upload the files in the `upload/` directory to the CDP terminal:
-- `import-jsonl.sh`
-- `state-documents.jsonl`
-- `submission-documents.jsonl`
+The generated JSONL files in the `output/` directory are ready to be:
 
-**Note:** When using the CDP Terminal, Firefox is recommended over Chrome. Firefox maintains the connection more reliably during long-running operations, where Chrome has a tendency to close the connection prematurely.
+1. Embedded in a `grants-ui-backend` hot fix release
+2. Imported via a temporary endpoint in the `grants-ui-backend` service that performs a direct MongoDB import
 
-### Step 3: Import to MongoDB
-
-After uploading to the CDP terminal, make the bash script executable and run the imports:
-
-```bash
-# Make the script executable (required after upload)
-chmod 777 import-jsonl.sh
-
-# Import state documents (uses default chunk size of 100)
-./import-jsonl.sh grant-application-state state-documents.jsonl
-
-# Import submission documents with custom chunk size
-./import-jsonl.sh grant_application_submissions submission-documents.jsonl 500
-```
-
-### Import Script Options
-
-The `import-jsonl.sh` script accepts:
-- **Argument 1**: Collection name - MongoDB collection name (required)
-- **Argument 2**: JSONL file - Path to JSONL file to import (required)
-- **Argument 3**: Chunk size - Number of documents per chunk (optional, default: 100)
-
-**How it works:**
-1. Splits the JSONL file into chunks of the specified size
-2. For each chunk, creates a mongosh script with an `insertMany` command
-3. Executes each script via `mongosh < script.js` (uses default mongosh connection)
-4. Cleans up temporary files
-
-**Tuning chunk size:**
-- If you encounter timeouts, reduce chunk size (e.g., 500 or 250)
+This approach has proven much faster and more reliable than importing via the CDP Terminal with bash scripts.

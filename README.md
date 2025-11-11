@@ -201,7 +201,7 @@ XML comments are included in the test plans as reminders. After saving changes i
 
 ## Data Seeding
 
-You may want to seed the `grants-ui-backend` MongoDB database with test data to replicate querying over a large dataset. The [data-seeding](data-seeding/README.md) directory contains tools to generate and import test documents.
+We seed the `grants-ui-backend` MongoDB database with a year of background data to replicate querying over a large dataset for PRR purposes. The [data-seeding](data-seeding/README.md) directory contains a script to generate JSONL files that can be embedded in a 1grants-ui-backend1 hot fix release for direct MongoDB import.
 
 ## Related Repositories
 
