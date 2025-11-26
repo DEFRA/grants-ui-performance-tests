@@ -467,6 +467,13 @@
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">applicantMobile</stringProp>
               </elementProp>
+              <elementProp name="applicantBusinessAddress__uprn" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                <stringProp name="Argument.value"></stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">applicantBusinessAddress__uprn</stringProp>
+              </elementProp>
               <elementProp name="applicantBusinessAddress__addressLine1" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">true</boolProp>
                 <stringProp name="Argument.value">Test Farm</stringProp>
