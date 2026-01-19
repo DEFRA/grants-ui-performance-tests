@@ -3,6 +3,8 @@ FROM grafana/k6
 COPY scenarios/ ./scenarios/
 COPY entrypoint.sh .
 
+ENV HTTP_PROXY=http://localhost:3128
+ENV HTTPS_PROXY=https://localhost:3128
 ENV S3_ENDPOINT=https://s3.eu-west-2.amazonaws.com
 ENV K6_WEB_DASHBOARD=true
 ENV K6_WEB_DASHBOARD_EXPORT=reports/report.html
