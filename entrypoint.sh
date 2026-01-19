@@ -2,51 +2,30 @@
 
 echo "run_id: $RUN_ID in $ENVIRONMENT"
 
-NOW=$(date +"%Y%m%d-%H%M%S")
-
-if [ -z "${JM_HOME}" ]; then
-  JM_HOME=/opt/perftest
-fi
-
-JM_SCENARIOS=${JM_HOME}/scenarios
-JM_REPORTS=${JM_HOME}/reports
-JM_LOGS=${JM_HOME}/logs
-
-mkdir -p ${JM_REPORTS} ${JM_LOGS}
-
-SCENARIOFILE=${JM_SCENARIOS}/${TEST_SCENARIO}.jmx
-REPORTFILE=${NOW}-perftest-${TEST_SCENARIO}-report.csv
-LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
+mkdir -p /reports
 
 # Run the test suite
-jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f \
-  -Jenv="${ENVIRONMENT}" \
-  -JRAMPUP_SECONDS="${RAMPUP_SECONDS}" \
-  -JTHREAD_COUNT="${THREAD_COUNT}" \
-  -JDURATION_SECONDS="${DURATION_SECONDS}" \
-  -JCSV_RECYCLE_ON_EOF="${CSV_RECYCLE_ON_EOF}" \
-  -JCSV_STOP_ON_EOF="${CSV_STOP_ON_EOF}"
+k6 run scenarios/example-grant-with-auth.js
+K6_EXIT_CODE=$?
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
 if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
-  # Copy the CSV report file and the generated report files to the S3 bucket
-   if [ -f "$JM_REPORTS/index.html" ]; then
-      aws --endpoint-url=$S3_ENDPOINT s3 cp "$REPORTFILE" "$RESULTS_OUTPUT_S3_PATH/$REPORTFILE"
-      aws --endpoint-url=$S3_ENDPOINT s3 cp "$JM_REPORTS" "$RESULTS_OUTPUT_S3_PATH" --recursive
+   # Copy the report file to the S3 bucket
+   if [ -f "/reports/report.html" ]; then
+      aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/report.html" "$RESULTS_OUTPUT_S3_PATH/index.html"
       if [ $? -eq 0 ]; then
-        echo "CSV report file and test results published to $RESULTS_OUTPUT_S3_PATH"
+        echo "Report file published to $RESULTS_OUTPUT_S3_PATH"
       fi
    else
-      echo "$JM_REPORTS/index.html is not found"
+      echo "report not found"
       exit 1
    fi
 else
-   echo "RESULTS_OUTPUT_S3_PATH is not set"
-   exit 1
+   echo "RESULTS_OUTPUT_S3_PATH is not set, skipping S3 upload"
 fi
 
-# exit non-zero if failures reported
-if grep -q ',false,' ${REPORTFILE}; then
-    echo "RESULTS CONTAIN FAILURES, EXITING NON-ZERO"
+# exit non-zero if k6 reported threshold failures
+if [ $K6_EXIT_CODE -ne 0 ]; then
+    echo "K6 REPORTED FAILURES (exit code $K6_EXIT_CODE), EXITING NON-ZERO"
     exit 1
 fi
