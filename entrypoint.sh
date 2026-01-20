@@ -6,17 +6,15 @@ if [ -n "$CDP_HTTP_PROXY" ]; then
    export HTTP_PROXY="$CDP_HTTP_PROXY"
    export HTTPS_PROXY="$CDP_HTTPS_PROXY"
    export NO_PROXY=".cdp-int.defra.cloud"
-   echo "HTTP_PROXY set to: $HTTP_PROXY"
-   echo "HTTPS_PROXY set to: $HTTPS_PROXY"
-   echo "NO_PROXY set to: $NO_PROXY"
-else
-   echo "CDP_HTTP_PROXY not set, no proxy configured"
 fi
 
 mkdir -p /reports
 
-k6 run scenarios/example-grant-with-auth.js
+k6 run --out json=/reports/metrics.json scenarios/example-grant-with-auth.js
 K6_EXIT_CODE=$?
+
+# Generate HTML report from metrics
+./generate-report.sh /reports/metrics.json /reports/report.html
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
 if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
@@ -30,8 +28,6 @@ if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
       echo "report not found"
       exit 1
    fi
-else
-   echo "RESULTS_OUTPUT_S3_PATH is not set, skipping S3 upload"
 fi
 
 # exit non-zero if k6 reported threshold failures
