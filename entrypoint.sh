@@ -5,8 +5,10 @@ echo "run_id: $RUN_ID in $ENVIRONMENT"
 if [ -n "$CDP_HTTP_PROXY" ]; then
    export HTTP_PROXY="$CDP_HTTP_PROXY"
    export HTTPS_PROXY="$CDP_HTTPS_PROXY"
+   export NO_PROXY=".cdp-int.defra.cloud"
    echo "HTTP_PROXY set to: $HTTP_PROXY"
    echo "HTTPS_PROXY set to: $HTTPS_PROXY"
+   echo "NO_PROXY set to: $NO_PROXY"
 else
    echo "CDP_HTTP_PROXY not set, no proxy configured"
 fi
