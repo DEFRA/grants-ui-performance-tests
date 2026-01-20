@@ -8,6 +8,9 @@ ENV K6_WEB_DASHBOARD=true
 ENV K6_WEB_DASHBOARD_EXPORT=/reports/report.html
 
 USER root
+
+RUN apk add --no-cache aws-cli
+
 RUN mkdir -p /reports
 RUN chown -R k6:k6 /reports
 VOLUME reports
