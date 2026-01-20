@@ -58,7 +58,7 @@ function performJourney() {
     try {
         const crn = users[__VU % users.length]
 
-        navigateTo('https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start')
+        navigateTo('https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start/')
 
         // Defra ID
         submitForm({crn: crn, password: 'x'})
