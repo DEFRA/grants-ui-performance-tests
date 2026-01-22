@@ -6,91 +6,46 @@ Performance test suite for Defra's [grants-ui](https://github.com/DEFRA/grants-u
 
 ## Test Coverage
 
-The suite provides performance testing for:
-- Non-land based grant application journeys served by `grants-ui`
-- Reusable `grants-ui` components
+The suite provides performance testing for a generic example grant journey using reusable `grants-ui` components.
 
 ## Technology Stack
 
-- **Apache JMeter** for load testing and performance measurement
+- **Grafana k6** for load testing and performance measurement
 
-## Test Plans
+## Test Scenarios
 
-Individual test plans are located in the `/scenarios` directory, with each plan targeting a specific grant application journey.
+Individual test scripts are located in the `/scenarios` directory, with each script targeting a specific grant application journey.
 
-Current test plans:
-- `example-grant-with-auth.jmx` - Example grant application with Defra ID authentication
+Current test scenarios:
+- `example-grant-with-auth.js` - Example grant application journey with Defra ID authentication
 
-## Test Execution Styles
+## Configuration
 
-Test plans support two distinct execution styles aligned with the Non-Functional Requirements (NFRs) for grant applications:
+Test scenarios are parameterized via environment variables:
 
-### Response Time Testing
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DURATION_SECONDS` | `180` | Total test duration in seconds |
+| `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
+| `VU_COUNT` | `100` | Number of concurrent virtual users |
 
-**Purpose:** Observe response times under maximum load conditions.
+## Test Assertions
 
-**Configuration:**
-- Duration: 180 seconds (3 minutes)
-- Ramp-up: 30 seconds
-- Concurrent users: 100
-- User behavior: Recycle
-
-**Environment variables:**
-```bash
-# set in CDP portal
-CSV_RECYCLE_ON_EOF=true
-CSV_STOP_ON_EOF=false
-DURATION_SECONDS=180
-RAMPUP_SECONDS=30
-THREAD_COUNT=100
-```
-
-This test runs as many journeys as possible within the time limit, recycling through the available test users to maintain consistent load.
-
-### Scalability Testing
-
-**Purpose:** Verify system can handle the target number of individual user journeys.
-
-**Configuration:**
-- Duration: 3600 seconds (1 hour)
-- Ramp-up: 3600 seconds (gradual increase over duration)
-- Concurrent users: 50 (max concurrent)
-- User behavior: No recycling (700 unique journeys, one per user)
-
-**Environment variables:**
-```bash
-# set in CDP portal
-CSV_RECYCLE_ON_EOF=false
-CSV_STOP_ON_EOF=true
-DURATION_SECONDS=3600
-RAMPUP_SECONDS=3600
-THREAD_COUNT=50
-```
-
-This test executes exactly 700 individual user journeys (one per user in `users.csv`), ramping up gradually to a maximum of 50 concurrent users over the hour.
-
-### Test Assertions
-
-Each test plan includes:
+Each test scenario includes:
 
 **Response Status Code Assertion:**
 - Validates all responses return HTTP 200 success
-- The test plan follows redirects automatically (302s are handled transparently) and only validates the final response code
+- The test follows redirects automatically (302s are handled transparently) and only validates the final response code
 
 **Reference Number Assertion:**
 - Validates all submissions return a response containing a valid reference number to indicate successful submission to GAS
 
-### Configuration Parameters
+### Thresholds
 
-All test plans are parameterized via environment variables, set as secrets in the CDP portal:
+The test enforces performance thresholds:
+- `journey_http_req_duration` p(95) < 3000ms - 95th percentile response time for journey pages must be under 3 seconds
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CSV_RECYCLE_ON_EOF` | `true` | Whether to recycle CSV user data when reaching end of file |
-| `CSV_STOP_ON_EOF` | `false` | Whether to stop threads when reaching end of  CSV file |
-| `DURATION_SECONDS` | `180` | Total test duration in seconds |
-| `RAMPUP_SECONDS` | `30` | Time to ramp up to target thread count |
-| `THREAD_COUNT` | `100` | Number of concurrent threads (virtual users) |
+Note: The `journey_http_req_duration` metric only includes actual journey pages (start through confirmation), excluding initial navigation, login and cleardown steps.
 
 ## Running Tests
 
@@ -98,50 +53,60 @@ All test plans are parameterized via environment variables, set as secrets in th
 
 Tests are executed from the CDP Portal under the **Test Suites** section for the **Perf-Test** environment.
 
-**Prerequisites:**
-Environment variables must be configured as secrets in the CDP Portal for the **Perf-Test** environment
-
 **Execution:**
-1. Navigate to Test Suites in the CDP Portal.
-2. Configure the test style (Response Time or Scalability) via environment variables.
+1. Navigate to Test Suites in the CDP Portal
+2. Configure the test via environment variables the if defaults need to be overridden
 3. Execute the test
-4. View reports directly in the portal once the test completes
+4. View reports in the portal once the test completes
 
 **Reports:**
-- CSV results are automatically uploaded to S3
 - HTML reports are generated and published to S3
-- Both are accessible through the CDP Portal interface
+- Accessible through the CDP Portal interface
 
 ### Running Locally
 
-Use the JMeter GUI for local development and debugging:
-
 **Prerequisites:**
-- Apache JMeter 5.6.3 or higher
-- Java 8 or higher
+- Docker
 
-**Steps:**
-1. Open JMeter GUI
-2. Load a test plan from `/scenarios` directory
-3. Configure HTTP Request Defaults to point to your target environment:
-   - Set `Server Name` to your `grants-ui` instance (local or hosted)
-4. Set User Defined Variables in the Test Plan if you want to override defaults
-5. Run the test via JMeter GUI
+**Build:**
+```bash
+docker build -t grants-ui-performance-tests .
+```
 
-**Local test data:**
-- Ensure `users.csv` is present in the same directory as the test plan
-- Update URLs in HTTP Samplers to match your local environment
+**Run with defaults:**
+```bash
+# Git Bash on Windows
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/reports:/reports" grants-ui-performance-tests
+
+# Linux/Mac
+docker run --rm -v "$(pwd)/reports:/reports" grants-ui-performance-tests
+```
+
+**Run with custom parameters:**
+```bash
+# Git Bash on Windows
+MSYS_NO_PATHCONV=1 docker run --rm \
+  -e DURATION_SECONDS=60 \
+  -e RAMPUP_SECONDS=10 \
+  -e VU_COUNT=10 \
+  -v "$(pwd)/reports:/reports" \
+  grants-ui-performance-tests
+```
+
+Reports are written to the `./reports` directory.
 
 ## Project Structure
 
 ```
 grants-ui-performance-tests/
-├── scenarios/             # JMeter test plans (.jmx files)
-│   └── example-grant-with-auth.jmx
+├── scenarios/             # k6 test scenarios (.js files)
+│   ├── example-grant-with-auth.js
 │   └── users.csv          # User data (CRNs for authentication)
+├── reports/               # Generated test reports (gitignored)
 ├── data-seeding/          # Tools for seeding backend test data
 ├── Dockerfile             # Container image definition
 ├── entrypoint.sh          # Test execution script
+├── generate-report.sh     # HTML report generation script
 └── README.md
 ```
 
@@ -151,49 +116,14 @@ The `users.csv` file contains Customer Reference Numbers (CRNs) for 700 unique t
 
 **Format:**
 ```csv
+crn
 1000000001
 1000000002
 ...
 1000000700
 ```
 
-## Modifying Test Plans
-
-**IMPORTANT:** When editing `.jmx` files in JMeter GUI, be aware that JMeter may automatically convert parameterized properties back to their original types, breaking variable substitution.
-
-If you edit the test plan in JMeter GUI, verify these properties remain as `stringProp` (not `intProp`, `longProp`, or `boolProp`):
-
-**ThreadGroup:**
-- `ThreadGroup.num_threads` - must be `stringProp` (not `intProp`)
-- `ThreadGroup.ramp_time` - must be `stringProp` (not `intProp`)
-- `ThreadGroup.duration` - must be `stringProp` (not `longProp`)
-
-**CSV Data Set Config:**
-- `recycle` - must be `stringProp` (not `boolProp`)
-- `stopThread` - must be `stringProp` (not `boolProp`)
-
-XML comments are included in the test plans as reminders. After saving changes in JMeter GUI, manually verify these properties in the XML.
-
-## Troubleshooting
-
-**Test Fails Immediately:**
-- Check that `users.csv` exists and is accessible
-- Verify target URLs in test plan are reachable
-- Ensure environment variables are set correctly
-
-**Variable Substitution Not Working:**
-- Open the `.jmx` file in a text editor
-- Verify parameterized properties are `stringProp` (not typed props)
-- Check User Defined Variables are defined in the Test Plan
-- Confirm Java properties are passed via `-J` flags in `entrypoint.sh`
-
-**Results Not Published to S3:**
-- Verify `RESULTS_OUTPUT_S3_PATH` environment variable is set
-- Check S3 endpoint URL is correct
-- Ensure AWS credentials are available in the container
-- Confirm the test completed successfully (check for `index.html` in reports)
-
-## CI/CD Pipeline
+## CI Pipeline
 
 **Manual Execution:**
 - Tests can be triggered on-demand via CDP Portal

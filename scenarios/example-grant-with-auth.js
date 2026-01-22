@@ -6,14 +6,18 @@ import { Trend } from 'k6/metrics'
 
 const journeyDuration = new Trend('journey_http_req_duration')
 
+const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
+const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
+const VU_COUNT = __ENV.VU_COUNT || 100
+
 export const options = {
     scenarios: {
         journey: {
             executor: 'ramping-vus',
             startVUs: 1,
             stages: [
-                { duration: '30s', target: 100 },
-                { duration: '150s', target: 100 }
+                { duration: `${RAMPUP_SECONDS}s`, target: VU_COUNT },
+                { duration: `${DURATION_SECONDS - RAMPUP_SECONDS}s`, target: VU_COUNT }
             ],
             gracefulRampDown: '0s',
             gracefulStop: '10s'
