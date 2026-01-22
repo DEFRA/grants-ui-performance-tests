@@ -64,11 +64,9 @@ function performJourney() {
     try {
         const crn = users[__VU % users.length]
 
-        group('navigate-login-clear-state', () => {
-            navigateTo('https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start/')
-            submitForm({crn: crn, password: 'x'})
-            clickLink('Clear application state')
-        })
+        navigateTo('https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start/')
+        submitForm({crn: crn, password: 'x'})
+        clickLink('Clear application state')
 
         group('start', () => {
             submitJourneyForm()
