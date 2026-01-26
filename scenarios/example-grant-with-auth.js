@@ -24,7 +24,7 @@ export const options = {
         },
     },
     thresholds: {
-        // 95th percentile for journey requests should be less that 3 secs
+        // 95th percentile for journey requests should be less than 3 secs
         journey_http_req_duration: ['p(95)<3000']
     },
 }
@@ -52,12 +52,12 @@ function performJourney() {
     }
 
     const submitForm = function (fields) {
-        sleep(3) // Mimic human interaction
         response = response.submitForm({ formSelector: 'form', fields: fields })
         expect(response.status).to.equal(200)
     }
 
     const submitJourneyForm = function (fields) {
+        sleep(3) // Mimic human interaction
         fields = fields ?? {}
         let crumb = response.html().find(`input[name='crumb']`).attr('value')
         fields['crumb'] = crumb
