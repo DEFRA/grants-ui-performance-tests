@@ -1,6 +1,6 @@
 import http from 'k6/http'
 import { sleep, group } from 'k6'
-import { describe, expect } from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js'
+import { describe, expect } from './lib/k6chaijs.js'
 import { SharedArray } from 'k6/data'
 import { Trend } from 'k6/metrics'
 
