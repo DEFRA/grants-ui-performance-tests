@@ -9,6 +9,7 @@ const journeyDuration = new Trend('journey_http_req_duration')
 const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
+const P95_THRESHOLD_MS = __ENV.P95_THRESHOLD_MS || 3000
 
 export const options = {
     scenarios: {
@@ -24,8 +25,8 @@ export const options = {
         },
     },
     thresholds: {
-        // 95th percentile for journey requests should be less than 3 secs
-        journey_http_req_duration: ['p(95)<3000']
+        // 95th percentile for journey requests should be less than P95_THRESHOLD_MS
+        journey_http_req_duration: [`p(95)<${P95_THRESHOLD_MS}`]
     },
 }
 

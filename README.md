@@ -28,6 +28,7 @@ Test scenarios are parameterized via environment variables:
 | `DURATION_SECONDS` | `180` | Total test duration in seconds |
 | `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
 | `VU_COUNT` | `100` | Number of concurrent virtual users |
+| `P95_THRESHOLD_MS` | `3000` | 95th percentile response time threshold in milliseconds |
 
 ## Test Assertions
 
@@ -43,7 +44,7 @@ Each test scenario includes:
 ### Thresholds
 
 The test enforces performance thresholds:
-- `journey_http_req_duration` p(95) < 3000ms - 95th percentile response time for journey pages must be under 3 seconds
+- `journey_http_req_duration` p(95) < `P95_THRESHOLD_MS`ms - 95th percentile response time for journey pages must be under the configured threshold (default 3000ms)
 
 Note: The `journey_http_req_duration` metric only includes actual journey pages (start through confirmation), excluding initial navigation, login and cleardown steps.
 
@@ -89,6 +90,7 @@ MSYS_NO_PATHCONV=1 docker run --rm \
   -e DURATION_SECONDS=60 \
   -e RAMPUP_SECONDS=10 \
   -e VU_COUNT=10 \
+  -e P95_THRESHOLD_MS=3000 \
   -v "$(pwd)/reports:/reports" \
   grants-ui-performance-tests
 ```
