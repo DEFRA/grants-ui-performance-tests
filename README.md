@@ -103,7 +103,6 @@ Reports are written to the `./reports` directory.
 ```
 grants-ui-performance-tests/
 ├── scenarios/             # k6 test scenarios (.js files)
-│   ├── lib/               # Vendored third-party k6 libraries
 │   ├── example-grant-with-auth.js
 │   └── users.csv          # User data (CRNs for authentication)
 ├── reports/               # Generated test reports (gitignored)
@@ -113,21 +112,6 @@ grants-ui-performance-tests/
 ├── generate-report.sh     # HTML report generation script
 └── README.md
 ```
-
-## Dependencies
-
-Third-party k6 libraries are vendored into `scenarios/lib/` rather than fetched at runtime, to avoid network dependencies during test execution.
-
-| File | Source | Version |
-|------|--------|---------|
-| `scenarios/lib/k6chaijs.js` | https://jslib.k6.io/k6chaijs/4.3.4.3/index.js | 4.3.4.3 |
-
-To update a library, download the new version and replace the file:
-```bash
-curl -fsSL --ssl-no-revoke https://jslib.k6.io/k6chaijs/<new-version>/index.js -o scenarios/lib/k6chaijs.js
-```
-
-Then update the version in the table above.
 
 ## Test Data
 

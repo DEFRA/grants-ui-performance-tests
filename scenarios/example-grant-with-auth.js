@@ -1,16 +1,16 @@
 import http from 'k6/http'
 import { sleep, group } from 'k6'
-import { describe, expect } from './lib/k6chaijs.js'
+import { describe, expect } from 'https://jslib.k6.io/k6chaijs/4.3.4.3/index.js'
 import { SharedArray } from 'k6/data'
 import { Trend } from 'k6/metrics'
 
 const journeyDuration = new Trend('journey_http_req_duration')
 
+const BASE_URL = __ENV.BASE_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
 const P95_THRESHOLD_MS = __ENV.P95_THRESHOLD_MS || 3000
-const BASE_URL = __ENV.BASE_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 
 export const options = {
     scenarios: {
