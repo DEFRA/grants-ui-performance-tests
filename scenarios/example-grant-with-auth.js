@@ -10,6 +10,7 @@ const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
 const P95_THRESHOLD_MS = __ENV.P95_THRESHOLD_MS || 3000
+const BASE_URL = __ENV.BASE_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 
 export const options = {
     scenarios: {
@@ -70,7 +71,7 @@ function performJourney() {
         const crn = users[__VU % users.length]
 
         group('navigate', () => {
-            navigateTo('https://grants-ui.perf-test.cdp-int.defra.cloud/example-grant-with-auth/start/')
+            navigateTo(`${BASE_URL}/example-grant-with-auth/start/`)
         })
 
         group('login', () => {
