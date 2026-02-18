@@ -78,6 +78,13 @@ function performJourney() {
             submitForm({crn: crn, password: 'x'})
         })
 
+        group('organisations', () => {
+            if (response.url.includes('/organisations')) {
+                const sbiValue = response.html().find('#sbi').first().attr('value')
+                submitForm({ sbi: sbiValue })
+            }
+        })
+
         group('clear-state', () => {
             clickLink('Clear application state')
         })
