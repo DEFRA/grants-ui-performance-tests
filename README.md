@@ -25,7 +25,7 @@ Test scenarios are parameterized via environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BASE_URL` | `https://grants-ui.perf-test.cdp-int.defra.cloud` | Base URL of the grants-ui instance under test |
+| `HOST_URL` | `https://grants-ui.perf-test.cdp-int.defra.cloud` | Host URL of the grants-ui instance under test |
 | `DURATION_SECONDS` | `180` | Total test duration in seconds |
 | `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
 | `VU_COUNT` | `100` | Number of concurrent virtual users |

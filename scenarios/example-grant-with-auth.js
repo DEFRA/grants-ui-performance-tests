@@ -6,7 +6,7 @@ import { Trend } from 'k6/metrics'
 
 const journeyDuration = new Trend('journey_http_req_duration')
 
-const BASE_URL = __ENV.BASE_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
+const HOST_URL = __ENV.HOST_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
@@ -71,7 +71,7 @@ function performJourney() {
         const crn = users[__VU % users.length]
 
         group('navigate', () => {
-            navigateTo(`${BASE_URL}/example-grant-with-auth/start/`)
+            navigateTo(`${HOST_URL}/example-grant-with-auth/start/`)
         })
 
         group('login', () => {
