@@ -147,6 +147,8 @@ cat > "$OUTPUT_FILE" << 'HTMLHEADER'
         tr:last-child td { border-bottom: none; }
         .pass { color: #27ae60; font-weight: bold; }
         .fail { color: #e74c3c; font-weight: bold; }
+        .value.pass { color: #27ae60; }
+        .value.fail { color: #e74c3c; }
         .duration { font-family: monospace; }
         .timestamp { color: #95a5a6; font-size: 14px; margin-bottom: 20px; }
     </style>
