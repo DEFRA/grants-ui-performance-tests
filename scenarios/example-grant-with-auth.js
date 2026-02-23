@@ -1,6 +1,6 @@
 import http from 'k6/http'
 import { sleep, group } from 'k6'
-import { describe, expect } from './lib/k6chaijs.js'
+import { expect } from './lib/k6chaijs.js'
 import { SharedArray } from 'k6/data'
 import { Trend } from 'k6/metrics'
 
@@ -26,13 +26,8 @@ export const options = {
         },
     },
     thresholds: {
-        // 95th percentile for journey requests should be less than P95_THRESHOLD_MS
         journey_http_req_duration: [`p(95)<${P95_THRESHOLD_MS}`]
     },
-}
-
-export default function () {
-    describe('example-grant-with-auth', (t) => { performJourney() })
 }
 
 const users = new SharedArray('users', function () {
@@ -40,7 +35,7 @@ const users = new SharedArray('users', function () {
     return data.filter(line => line.trim()).map(line => line.trim())
 })
 
-function performJourney() {
+export default function () {
     let response = null
 
     const navigateTo = function(url) {
@@ -71,7 +66,7 @@ function performJourney() {
         const crn = users[__VU % users.length]
 
         group('navigate', () => {
-            navigateTo(`${HOST_URL}/example-grant-with-auth/start/`)
+            navigateTo(`${HOST_URL}/example-grant-with-auth/start`)
         })
 
         group('login', () => {
