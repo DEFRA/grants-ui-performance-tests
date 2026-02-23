@@ -5,6 +5,7 @@ COPY entrypoint.sh .
 COPY generate-report.sh .
 
 ENV S3_ENDPOINT=https://s3.eu-west-2.amazonaws.com
+ENV GENERATE_REPORT=true
 
 USER root
 

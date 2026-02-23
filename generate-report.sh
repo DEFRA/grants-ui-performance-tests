@@ -60,7 +60,7 @@ for file in /tmp/k6_groups/*.txt; do
         echo "${group},${count},${avg},${min},${max},${p95}" >> /tmp/duration_stats.csv
     fi
 done
-sort -o /tmp/duration_stats.csv /tmp/duration_stats.csv
+sort -t',' -k6 -rn /tmp/duration_stats.csv -o /tmp/duration_stats.csv
 
 # Extract failures by group
 > /tmp/failure_stats.csv
@@ -162,6 +162,21 @@ echo "        <p class=\"timestamp\">Generated: $(date -u '+%Y-%m-%d %H:%M:%S UT
 TOTAL_REQUESTS=$(awk -F',' '{sum+=$2} END {print sum+0}' /tmp/duration_stats.csv)
 OVERALL_AVG=$(awk -F',' '{sum+=$3; count++} END {if(count>0) printf "%.2f", sum/count; else print "0"}' /tmp/duration_stats.csv)
 
+# Calculate overall journey p95 from journey_http_req_duration metric
+grep '"metric":"journey_http_req_duration"' "$METRICS_FILE" | grep '"type":"Point"' \
+    | sed -n 's/.*"value":\([0-9.]*\).*/\1/p' \
+    | sort -n > /tmp/journey_values.txt
+JOURNEY_COUNT=$(wc -l < /tmp/journey_values.txt | tr -d ' ')
+if [ "$JOURNEY_COUNT" -gt 0 ]; then
+    p95_idx=$(awk "BEGIN {printf \"%.0f\", ($JOURNEY_COUNT * 95 + 99) / 100}")
+    [ "$p95_idx" -lt 1 ] && p95_idx=1
+    [ "$p95_idx" -gt "$JOURNEY_COUNT" ] && p95_idx=$JOURNEY_COUNT
+    JOURNEY_P95=$(sed -n "${p95_idx}p" /tmp/journey_values.txt)
+else
+    JOURNEY_P95="N/A"
+fi
+rm -f /tmp/journey_values.txt
+
 # Count total failures
 TOTAL_FAILURES=0
 if [ -f /tmp/failure_stats.csv ] && [ -s /tmp/failure_stats.csv ]; then
@@ -194,21 +209,21 @@ cat >> "$OUTPUT_FILE" << SUMMARY
                 <div class="value">${TOTAL_FAILURES}</div>
             </div>
             <div class="summary-card">
-                <h3>Avg Response Time</h3>
-                <div class="value">${OVERALL_AVG}ms</div>
+                <h3>Journey p95</h3>
+                <div class="value">${JOURNEY_P95}ms</div>
             </div>
         </div>
 
-        <h2>Response Times by Page</h2>
+        <h2>Response Times by Group</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Page / Group</th>
+                    <th>Group</th>
                     <th>Requests</th>
                     <th>Avg (ms)</th>
                     <th>Min (ms)</th>
                     <th>Max (ms)</th>
-                    <th>P95 (ms)</th>
+                    <th>P95 (ms) &#9660;</th>
                     <th>Failures</th>
                 </tr>
             </thead>

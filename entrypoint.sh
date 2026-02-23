@@ -10,24 +10,32 @@ fi
 
 mkdir -p /reports
 
-k6 run --out json=/reports/metrics.json scenarios/example-grant-with-auth.js
+if [ "$GENERATE_REPORT" = "true" ]; then
+    k6 run --out json=/reports/metrics.json scenarios/example-grant-with-auth.js
+else
+    k6 run scenarios/example-grant-with-auth.js
+fi
+
 K6_EXIT_CODE=$?
 
-# Generate HTML report from metrics
-./generate-report.sh /reports/metrics.json /reports/report.html
+if [ "$GENERATE_REPORT" = "true" ]; then
+    # Generate HTML report from metrics
+    echo "Generating report"
+    ./generate-report.sh /reports/metrics.json /reports/report.html
 
-# Publish the results into S3 so they can be displayed in the CDP Portal
-if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
-   # Copy the report file to the S3 bucket
-   if [ -f "/reports/report.html" ]; then
-      aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/report.html" "$RESULTS_OUTPUT_S3_PATH/index.html"
-      if [ $? -eq 0 ]; then
-        echo "Report file published to $RESULTS_OUTPUT_S3_PATH"
-      fi
-   else
-      echo "report not found"
-      exit 1
-   fi
+    # Publish the results into S3 so they can be displayed in the CDP Portal
+    if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
+       # Copy the report file to the S3 bucket
+       if [ -f "/reports/report.html" ]; then
+          aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/report.html" "$RESULTS_OUTPUT_S3_PATH/index.html"
+          if [ $? -eq 0 ]; then
+            echo "Report file published to $RESULTS_OUTPUT_S3_PATH"
+          fi
+       else
+          echo "report not found"
+          exit 1
+       fi
+    fi
 fi
 
 # exit non-zero if k6 reported threshold failures

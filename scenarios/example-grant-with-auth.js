@@ -38,12 +38,12 @@ const users = new SharedArray('users', function () {
 export default function () {
     let response = null
 
-    const navigateTo = function(url) {
+    const navigateTo = function (url) {
         response = http.get(url)
         expect(response.status).to.equal(200)
     }
 
-    const clickLink = function(text) {
+    const clickLink = function (text) {
         response = response.clickLink({ selector: `a:contains('${text}')` })
         expect(response.status).to.equal(200)
     }
@@ -70,7 +70,7 @@ export default function () {
         })
 
         group('login', () => {
-            submitForm({crn: crn, password: 'x'})
+            submitForm({ crn: crn, password: 'x' })
         })
 
         group('organisations', () => {

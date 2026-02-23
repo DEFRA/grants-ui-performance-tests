@@ -25,11 +25,12 @@ Test scenarios are parameterized via environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `HOST_URL` | `https://grants-ui.perf-test.cdp-int.defra.cloud` | Host URL of the grants-ui instance under test |
+| `HOST_URL` | `https://grants-ui.perf-test.cdp-int.defra.cloud` | Base URL of the grants-ui instance under test |
 | `DURATION_SECONDS` | `180` | Total test duration in seconds |
 | `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
 | `VU_COUNT` | `100` | Number of concurrent virtual users |
 | `P95_THRESHOLD_MS` | `3000` | 95th percentile response time threshold in milliseconds |
+| `GENERATE_REPORT` | `true` | Toggles HTML report generation if not needed |
 
 ## Test Assertions
 
