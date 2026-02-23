@@ -1,10 +1,11 @@
 #!/bin/sh
 
 # Generate HTML report from k6 metrics.json
-# Usage: ./generate-report.sh /reports/metrics.json /reports/report.html
+# Usage: ./generate-report.sh /reports/metrics.json /reports/report.html <k6_exit_code>
 
 METRICS_FILE="$1"
 OUTPUT_FILE="$2"
+K6_EXIT_CODE="${3:-0}"
 
 if [ ! -f "$METRICS_FILE" ]; then
     echo "Metrics file not found: $METRICS_FILE"
@@ -185,7 +186,7 @@ if [ -f /tmp/failure_stats.csv ] && [ -s /tmp/failure_stats.csv ]; then
     done < /tmp/failure_stats.csv
 fi
 
-if [ "$TOTAL_FAILURES" -eq 0 ]; then
+if [ "$K6_EXIT_CODE" -eq 0 ]; then
     STATUS_CLASS="pass"
     STATUS_TEXT="PASSED"
 else

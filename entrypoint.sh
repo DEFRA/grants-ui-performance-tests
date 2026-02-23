@@ -21,7 +21,7 @@ K6_EXIT_CODE=$?
 if [ "$GENERATE_REPORT" = "true" ]; then
     # Generate HTML report from metrics
     echo "Generating report"
-    ./generate-report.sh /reports/metrics.json /reports/report.html
+    ./generate-report.sh /reports/metrics.json /reports/report.html "$K6_EXIT_CODE"
 
     # Publish the results into S3 so they can be displayed in the CDP Portal
     if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then

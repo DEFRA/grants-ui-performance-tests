@@ -26,7 +26,8 @@ export const options = {
         },
     },
     thresholds: {
-        journey_http_req_duration: [`p(95)<${P95_THRESHOLD_MS}`]
+        journey_http_req_duration: [`p(95)<${P95_THRESHOLD_MS}`],
+        http_req_failed: ['rate==0']
     },
 }
 
@@ -40,17 +41,14 @@ export default function () {
 
     const navigateTo = function (url) {
         response = http.get(url)
-        expect(response.status).to.equal(200)
     }
 
     const clickLink = function (text) {
         response = response.clickLink({ selector: `a:contains('${text}')` })
-        expect(response.status).to.equal(200)
     }
 
     const submitForm = function (fields) {
         response = response.submitForm({ formSelector: 'form', fields: fields })
-        expect(response.status).to.equal(200)
     }
 
     const submitJourneyForm = function (fields) {
