@@ -36,17 +36,14 @@ Test scenarios are parameterized via environment variables:
 
 Each test scenario includes:
 
-**Response Status Code Assertion:**
-- Validates all responses return HTTP 200 success
-- The test follows redirects automatically (302s are handled transparently) and only validates the final response code
-
 **Reference Number Assertion:**
-- Validates all submissions return a response containing a valid reference number to indicate successful submission to GAS
+- Validates the confirmation page contains a valid reference number, indicating successful end-to-end submission to GAS
 
 ### Thresholds
 
-The test enforces performance thresholds:
+The test enforces the following thresholds:
 - `journey_http_req_duration` p(95) < `P95_THRESHOLD_MS`ms - 95th percentile response time for journey pages must be under the configured threshold (default 3000ms)
+- `http_req_failed` rate == 0 - no HTTP request failures are permitted
 
 Note: The `journey_http_req_duration` metric only includes actual journey pages (start through confirmation), excluding initial navigation, login and cleardown steps.
 
