@@ -4,13 +4,26 @@ import { expect } from './lib/k6chaijs.js'
 import { SharedArray } from 'k6/data'
 import { Trend } from 'k6/metrics'
 
-const journeyDuration = new Trend('journey_http_req_duration')
-
 const HOST_URL = __ENV.HOST_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
 const P95_THRESHOLD_MS = __ENV.P95_THRESHOLD_MS || 3000
+
+const durationStart = new Trend('duration_start')
+const durationYesNoField = new Trend('duration_yes_no_field')
+const durationAutocompleteField = new Trend('duration_autocomplete_field')
+const durationRadiosField = new Trend('duration_radios_field')
+const durationCheckboxesField = new Trend('duration_checkboxes_field')
+const durationNumberField = new Trend('duration_number_field')
+const durationDatePartsField = new Trend('duration_date_parts_field')
+const durationMonthYearField = new Trend('duration_month_year_field')
+const durationSelectField = new Trend('duration_select_field')
+const durationMultilineTextField = new Trend('duration_multiline_text_field')
+const durationMultiFieldForm = new Trend('duration_multi_field_form')
+const durationSummary = new Trend('duration_summary')
+const durationDeclaration = new Trend('duration_declaration')
+const durationConfirmation = new Trend('duration_confirmation')
 
 export const options = {
     scenarios: {
@@ -26,9 +39,22 @@ export const options = {
         },
     },
     thresholds: {
-        journey_http_req_duration: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_start: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_yes_no_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_autocomplete_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_radios_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_checkboxes_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_number_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_date_parts_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_month_year_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_select_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_multiline_text_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_multi_field_form: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_summary: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
         http_req_failed: ['rate==0']
-    },
+    }
 }
 
 const users = new SharedArray('users', function () {
@@ -51,13 +77,13 @@ export default function () {
         response = response.submitForm({ formSelector: 'form', fields: fields })
     }
 
-    const submitJourneyForm = function (fields) {
+    const submitJourneyForm = function (trend, fields) {
         sleep(3) // Mimic human interaction
         fields = fields ?? {}
         let crumb = response.html().find(`input[name='crumb']`).attr('value')
         fields['crumb'] = crumb
         submitForm(fields)
-        journeyDuration.add(response.timings.duration)
+        trend.add(response.timings.duration)
     }
 
     try {
@@ -83,31 +109,31 @@ export default function () {
         })
 
         group('start', () => {
-            submitJourneyForm()
+            submitJourneyForm(durationStart)
         })
 
         group('yes-no-field', () => {
-            submitJourneyForm({ yesNoField: 'true' })
+            submitJourneyForm(durationYesNoField, { yesNoField: 'true' })
         })
 
         group('autocomplete-field', () => {
-            submitJourneyForm({ autocompleteField: 'ENG' })
+            submitJourneyForm(durationAutocompleteField, { autocompleteField: 'ENG' })
         })
 
         group('radios-field', () => {
-            submitJourneyForm({ radiosField: 'radiosFieldOption-A2' })
+            submitJourneyForm(durationRadiosField, { radiosField: 'radiosFieldOption-A2' })
         })
 
         group('checkboxes-field', () => {
-            submitJourneyForm({ checkboxesField: 'checkboxesFieldOption-A1' })
+            submitJourneyForm(durationCheckboxesField, { checkboxesField: 'checkboxesFieldOption-A1' })
         })
 
         group('number-field', () => {
-            submitJourneyForm({ numberField: '100000' })
+            submitJourneyForm(durationNumberField, { numberField: '100000' })
         })
 
         group('date-parts-field', () => {
-            submitJourneyForm({
+            submitJourneyForm(durationDatePartsField, {
                 datePartsField__day: '01',
                 datePartsField__month: '03',
                 datePartsField__year: '2026'
@@ -115,22 +141,22 @@ export default function () {
         })
 
         group('month-year-field', () => {
-            submitJourneyForm({
+            submitJourneyForm(durationMonthYearField, {
                 monthYearField__month: '12',
                 monthYearField__year: '2025'
             })
         })
 
         group('select-field', () => {
-            submitJourneyForm({ selectField: 'selectFieldOption-A1' })
+            submitJourneyForm(durationSelectField, { selectField: 'selectFieldOption-A1' })
         })
 
         group('multiline-text-field', () => {
-            submitJourneyForm({ multilineTextField: 'Lorem ipsum' })
+            submitJourneyForm(durationMultilineTextField, { multilineTextField: 'Lorem ipsum' })
         })
 
         group('multi-field-form', () => {
-            submitJourneyForm({
+            submitJourneyForm(durationMultiFieldForm, {
                 applicantName: 'James Test-Farmer',
                 applicantEmail: 'cl-defra-gae-test-applicant-email@equalexperts.com',
                 applicantMobile: '07777 123456',
@@ -144,15 +170,16 @@ export default function () {
         })
 
         group('summary', () => {
-            submitJourneyForm()
+            submitJourneyForm(durationSummary)
         })
 
         group('declaration', () => {
-            submitJourneyForm()
+            submitJourneyForm(durationDeclaration)
         })
 
         group('confirmation', () => {
             expect(response.body).to.include('EGWA-')
+            durationConfirmation.add(response.timings.duration)
         })
     } catch (error) {
         console.error(`Error for URL: ${response?.url}, error: ${error.message}`)
