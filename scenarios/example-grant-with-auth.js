@@ -79,13 +79,12 @@ export default function () {
         response = response.submitForm({ formSelector: 'form', fields: fields })
     }
 
-    const submitJourneyForm = function (trend, fields) {
+    const submitJourneyForm = function (fields) {
         sleep(3) // Mimic human interaction
         fields = fields ?? {}
         let crumb = response.html().find(`input[name='crumb']`).attr('value')
         fields['crumb'] = crumb
         submitForm(fields)
-        trend.add(response.timings.duration)
     }
 
     try {
@@ -111,31 +110,38 @@ export default function () {
         })
 
         group('start', () => {
-            submitJourneyForm(durationStart)
+            durationStart.add(response.timings.duration)
+            submitJourneyForm()
         })
 
         group('yes-no-field', () => {
-            submitJourneyForm(durationYesNoField, { yesNoField: 'true' })
+            durationYesNoField.add(response.timings.duration)
+            submitJourneyForm({ yesNoField: 'true' })
         })
 
         group('autocomplete-field', () => {
-            submitJourneyForm(durationAutocompleteField, { autocompleteField: 'ENG' })
+            durationAutocompleteField.add(response.timings.duration)
+            submitJourneyForm({ autocompleteField: 'ENG' })
         })
 
         group('radios-field', () => {
-            submitJourneyForm(durationRadiosField, { radiosField: 'radiosFieldOption-A2' })
+            durationRadiosField.add(response.timings.duration)
+            submitJourneyForm({ radiosField: 'radiosFieldOption-A2' })
         })
 
         group('checkboxes-field', () => {
-            submitJourneyForm(durationCheckboxesField, { checkboxesField: 'checkboxesFieldOption-A1' })
+            durationCheckboxesField.add(response.timings.duration)
+            submitJourneyForm({ checkboxesField: 'checkboxesFieldOption-A1' })
         })
 
         group('number-field', () => {
-            submitJourneyForm(durationNumberField, { numberField: '100000' })
+            durationNumberField.add(response.timings.duration)
+            submitJourneyForm({ numberField: '100000' })
         })
 
         group('date-parts-field', () => {
-            submitJourneyForm(durationDatePartsField, {
+            durationDatePartsField.add(response.timings.duration)
+            submitJourneyForm({
                 datePartsField__day: '01',
                 datePartsField__month: '03',
                 datePartsField__year: '2026'
@@ -143,22 +149,26 @@ export default function () {
         })
 
         group('month-year-field', () => {
-            submitJourneyForm(durationMonthYearField, {
+            durationMonthYearField.add(response.timings.duration)
+            submitJourneyForm({
                 monthYearField__month: '12',
                 monthYearField__year: '2025'
             })
         })
 
         group('select-field', () => {
-            submitJourneyForm(durationSelectField, { selectField: 'selectFieldOption-A1' })
+            durationSelectField.add(response.timings.duration)
+            submitJourneyForm({ selectField: 'selectFieldOption-A1' })
         })
 
         group('multiline-text-field', () => {
-            submitJourneyForm(durationMultilineTextField, { multilineTextField: 'Lorem ipsum' })
+            durationMultilineTextField.add(response.timings.duration)
+            submitJourneyForm({ multilineTextField: 'Lorem ipsum' })
         })
 
         group('multi-field-form', () => {
-            submitJourneyForm(durationMultiFieldForm, {
+            durationMultiFieldForm.add(response.timings.duration)
+            submitJourneyForm({
                 applicantName: 'James Test-Farmer',
                 applicantEmail: 'cl-defra-gae-test-applicant-email@equalexperts.com',
                 applicantMobile: '07777 123456',
@@ -172,16 +182,18 @@ export default function () {
         })
 
         group('summary', () => {
-            submitJourneyForm(durationSummary)
+            durationSummary.add(response.timings.duration)
+            submitJourneyForm()
         })
 
         group('declaration', () => {
-            submitJourneyForm(durationDeclaration)
+            durationDeclaration.add(response.timings.duration)
+            submitJourneyForm()
         })
 
         group('confirmation', () => {
-            expect(response.body).to.include('EGWA-')
             durationConfirmation.add(response.timings.duration)
+            expect(response.body).to.include('EGWA-')
         })
 
         group('print-submitted-application', () => {

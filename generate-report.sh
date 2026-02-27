@@ -139,6 +139,7 @@ cat > "$OUTPUT_FILE" << 'HTMLHEADER'
         .duration { font-family: monospace; text-align: right; }
         .numeric { text-align: right; }
         .timestamp { color: #95a5a6; font-size: 14px; margin-bottom: 20px; }
+        .non-journey td { color: #95a5a6; font-style: italic; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -213,6 +214,12 @@ SUMMARY
 
 # Add table rows - merge duration and failure data
 while IFS=',' read -r group requests avg min max p95; do
+    # Mark non-journey groups
+    case "$group" in
+        navigate|login|organisations|clear-state) row_class="non-journey" ;;
+        *) row_class="" ;;
+    esac
+
     # Look up failures for this group
     failures=0
     if [ -f /tmp/failure_stats.csv ]; then
@@ -227,7 +234,7 @@ while IFS=',' read -r group requests avg min max p95; do
     fi
 
     cat >> "$OUTPUT_FILE" << ROW
-                <tr>
+                <tr${row_class:+ class="${row_class}"}>
                     <td><strong>${group}</strong></td>
                     <td class="numeric">${requests}</td>
                     <td class="duration">${avg}</td>
