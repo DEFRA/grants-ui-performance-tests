@@ -24,6 +24,7 @@ const durationMultiFieldForm = new Trend('duration_multi_field_form')
 const durationSummary = new Trend('duration_summary')
 const durationDeclaration = new Trend('duration_declaration')
 const durationConfirmation = new Trend('duration_confirmation')
+const durationPrintSubmittedApplication = new Trend('duration_print_submitted_application')
 
 export const options = {
     scenarios: {
@@ -53,6 +54,7 @@ export const options = {
         duration_summary: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_print_submitted_application: [`p(95)<${P95_THRESHOLD_MS}`],
         http_req_failed: ['rate==0']
     }
 }
@@ -180,6 +182,12 @@ export default function () {
         group('confirmation', () => {
             expect(response.body).to.include('EGWA-')
             durationConfirmation.add(response.timings.duration)
+        })
+
+        group('print-submitted-application', () => {
+            const printPath = response.html().find(`a:contains('View / Print submitted application')`).attr('href')
+            response = http.get(`${HOST_URL}${printPath}`)
+            durationPrintSubmittedApplication.add(response.timings.duration)
         })
     } catch (error) {
         console.error(`Error for URL: ${response?.url}, error: ${error.message}`)
