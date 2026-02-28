@@ -12,17 +12,10 @@ if [ ! -f "$METRICS_FILE" ]; then
     exit 1
 fi
 
-# Single awk pass: extract values to per-group/per-metric temp files, track aggregates
-rm -f /tmp/k6_grp_*.txt /tmp/k6_page_*.txt
+# Single awk pass: extract values to per-page temp files, track failures
+rm -f /tmp/k6_page_*.txt
 awk '
     /"type":"Point"/ {
-        grp = "unknown"
-        if (match($0, /"group":"[^"]*::([^"]+)"/)) {
-            grp = substr($0, RSTART, RLENGTH)
-            sub(/.*::/, "", grp)
-            sub(/"$/, "", grp)
-        }
-
         metric = ""
         if (match($0, /"metric":"[^"]+"/)) {
             metric = substr($0, RSTART, RLENGTH)
@@ -37,25 +30,29 @@ awk '
 
         if (val == "" || metric == "") next
 
-        if (metric == "http_req_duration") {
-            print val >> "/tmp/k6_grp_" grp ".txt"
-            dur_sum[grp] += val
-            dur_count[grp]++
-            if (!(grp in dur_min) || val < dur_min[grp]) dur_min[grp] = val
-            if (!(grp in dur_max) || val > dur_max[grp]) dur_max[grp] = val
-        }
-        if (metric == "http_req_failed" && val == 1) {
-            fail_count[grp]++
-        }
         if (metric ~ /^duration_/) {
             print val >> "/tmp/k6_page_" metric ".txt"
+            dur_sum[metric] += val
+            dur_count[metric]++
+            if (!(metric in dur_min) || val < dur_min[metric]) dur_min[metric] = val
+            if (!(metric in dur_max) || val > dur_max[metric]) dur_max[metric] = val
+        }
+
+        if (metric == "http_req_failed" && val == 1) {
+            grp = "unknown"
+            if (match($0, /"group":"[^"]*::([^"]+)"/)) {
+                grp = substr($0, RSTART, RLENGTH)
+                sub(/.*::/, "", grp)
+                sub(/"$/, "", grp)
+            }
+            fail_count[grp]++
         }
     }
     END {
-        for (grp in dur_count) {
+        for (metric in dur_count) {
             printf "%s,%d,%.2f,%.2f,%.2f\n",
-                grp, dur_count[grp], dur_sum[grp]/dur_count[grp], dur_min[grp], dur_max[grp] \
-                >> "/tmp/k6_grp_meta.txt"
+                metric, dur_count[metric], dur_sum[metric]/dur_count[metric], dur_min[metric], dur_max[metric] \
+                >> "/tmp/k6_page_meta.txt"
         }
         for (grp in fail_count) {
             print grp "," fail_count[grp] >> "/tmp/failure_stats.csv"
@@ -63,17 +60,28 @@ awk '
     }
 ' "$METRICS_FILE"
 
-# Calculate p95 per group, write duration_stats.csv
-> /tmp/duration_stats_unsorted.csv
-while IFS=',' read -r grp cnt avg mn mx; do
-    val_file="/tmp/k6_grp_${grp}.txt"
+# Calculate p95 per page metric, write duration_stats.csv in journey order
+JOURNEY_ORDER="duration_start duration_yes_no_field duration_autocomplete_field duration_radios_field duration_checkboxes_field duration_number_field duration_date_parts_field duration_month_year_field duration_select_field duration_multiline_text_field duration_multi_field_form duration_summary duration_declaration duration_confirmation duration_print_submitted_application"
+
+> /tmp/duration_stats.csv
+for metric in $JOURNEY_ORDER; do
+    [ -f "/tmp/k6_page_meta.txt" ] || continue
+    line=$(grep "^${metric}," /tmp/k6_page_meta.txt)
+    [ -z "$line" ] && continue
+    cnt=$(echo "$line" | cut -d',' -f2)
+    avg=$(echo "$line" | cut -d',' -f3)
+    mn=$(echo "$line" | cut -d',' -f4)
+    mx=$(echo "$line" | cut -d',' -f5)
+    val_file="/tmp/k6_page_${metric}.txt"
     sort -n "$val_file" > /tmp/k6_sorted.txt
     p95_idx=$(awk "BEGIN {n=$cnt; idx=int((n*95+99)/100); if(idx<1)idx=1; if(idx>n)idx=n; print idx}")
     p95=$(sed -n "${p95_idx}p" /tmp/k6_sorted.txt | awk '{printf "%.2f", $1}')
-    echo "${grp},${cnt},${avg},${mn},${mx},${p95}" >> /tmp/duration_stats_unsorted.csv
-done < /tmp/k6_grp_meta.txt
-sort -t',' -k6 -rn /tmp/duration_stats_unsorted.csv > /tmp/duration_stats.csv
-rm -f /tmp/duration_stats_unsorted.csv /tmp/k6_grp_*.txt /tmp/k6_grp_meta.txt /tmp/k6_sorted.txt
+    # Derive page name from metric name: strip duration_ prefix, replace _ with -
+    page=$(echo "$metric" | sed 's/^duration_//; s/_/-/g')
+    echo "${page},${cnt},${avg},${mn},${mx},${p95}" >> /tmp/duration_stats.csv
+done
+sort -t',' -k6 -rn /tmp/duration_stats.csv -o /tmp/duration_stats.csv
+rm -f /tmp/k6_page_*.txt /tmp/k6_page_meta.txt /tmp/k6_sorted.txt
 
 # Generate HTML
 cat > "$OUTPUT_FILE" << 'HTMLHEADER'
@@ -139,7 +147,6 @@ cat > "$OUTPUT_FILE" << 'HTMLHEADER'
         .duration { font-family: monospace; text-align: right; }
         .numeric { text-align: right; }
         .timestamp { color: #95a5a6; font-size: 14px; margin-bottom: 20px; }
-        .non-journey td { color: #95a5a6; font-style: italic; font-weight: normal; }
     </style>
 </head>
 <body>
@@ -154,10 +161,9 @@ echo "        <p class=\"timestamp\">Generated: $(date -u '+%Y-%m-%d %H:%M:%S UT
 TOTAL_REQUESTS=$(awk -F',' '{sum+=$2} END {print sum+0}' /tmp/duration_stats.csv)
 OVERALL_AVG=$(awk -F',' '{sum+=$3; count++} END {if(count>0) printf "%.2f", sum/count; else print "0"}' /tmp/duration_stats.csv)
 
-# Slowest journey p95: max p95 from duration_stats.csv, excluding non-journey groups
-JOURNEY_P95=$(awk -F',' '$1 != "navigate" && $1 != "login" && $1 != "organisations" && $1 != "clear-state" {printf "%.2f", $6; exit}' /tmp/duration_stats.csv)
+# Slowest page p95: max p95 across all duration_* metrics
+JOURNEY_P95=$(awk -F',' 'BEGIN{max=0} {if($6+0>max) max=$6+0} END{if(max>0) printf "%.2f", max; else print "N/A"}' /tmp/duration_stats.csv)
 [ -z "$JOURNEY_P95" ] && JOURNEY_P95="N/A"
-rm -f /tmp/k6_page_*.txt
 
 # Count total failures
 TOTAL_FAILURES=0
@@ -196,52 +202,31 @@ cat >> "$OUTPUT_FILE" << SUMMARY
             </div>
         </div>
 
-        <h2>Response Times by Group</h2>
+        <h2>Page Load Times</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Group</th>
+                    <th>Page</th>
                     <th style="text-align:right">Requests</th>
                     <th style="text-align:right">Avg (ms)</th>
                     <th style="text-align:right">Min (ms)</th>
                     <th style="text-align:right">Max (ms)</th>
                     <th style="text-align:right">P95 (ms) &#9660;</th>
-                    <th style="text-align:right">Failures</th>
                 </tr>
             </thead>
             <tbody>
 SUMMARY
 
-# Add table rows - merge duration and failure data
-while IFS=',' read -r group requests avg min max p95; do
-    # Mark non-journey groups
-    case "$group" in
-        navigate|login|organisations|clear-state) row_class="non-journey" ;;
-        *) row_class="" ;;
-    esac
-
-    # Look up failures for this group
-    failures=0
-    if [ -f /tmp/failure_stats.csv ]; then
-        failures=$(grep "^${group}," /tmp/failure_stats.csv | cut -d',' -f2)
-        failures=${failures:-0}
-    fi
-
-    if [ "$failures" -eq 0 ] 2>/dev/null; then
-        fail_class="pass"
-    else
-        fail_class="fail"
-    fi
-
+# Add table rows
+while IFS=',' read -r page requests avg min max p95; do
     cat >> "$OUTPUT_FILE" << ROW
-                <tr${row_class:+ class="${row_class}"}>
-                    <td><strong>${group}</strong></td>
+                <tr>
+                    <td><strong>${page}</strong></td>
                     <td class="numeric">${requests}</td>
                     <td class="duration">${avg}</td>
                     <td class="duration">${min}</td>
                     <td class="duration">${max}</td>
                     <td class="duration">${p95}</td>
-                    <td class="${fail_class} numeric">${failures}</td>
                 </tr>
 ROW
 done < /tmp/duration_stats.csv

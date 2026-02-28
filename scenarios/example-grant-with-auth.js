@@ -90,22 +90,13 @@ export default function () {
     try {
         const crn = users[__VU % users.length]
 
-        group('navigate', () => {
+        group('login-and-clear-state', () => {
             navigateTo(`${HOST_URL}/example-grant-with-auth/start`)
-        })
-
-        group('login', () => {
             submitForm({ crn: crn, password: 'x' })
-        })
-
-        group('organisations', () => {
             if (response.url.includes('/organisations')) {
                 const sbiValue = response.html().find('#sbi').first().attr('value')
                 submitForm({ sbi: sbiValue })
             }
-        })
-
-        group('clear-state', () => {
             clickLink('Clear application state')
         })
 
