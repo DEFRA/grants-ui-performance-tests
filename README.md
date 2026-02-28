@@ -39,13 +39,14 @@ Each test scenario includes:
 **Reference Number Assertion:**
 - Validates the confirmation page contains a valid reference number, indicating successful end-to-end submission to GAS
 
+**Page Load Metrics:**
+- Each journey page records its load time as a `duration_<page>` Trend metric (e.g. `duration_start`, `duration_yes_no_field`). These are used for per-page p95 thresholds and reported in the HTML report as page load times sorted by p95 descending.
+
 ### Thresholds
 
 The test enforces the following thresholds:
-- `journey_http_req_duration` p(95) < `P95_THRESHOLD_MS`ms - 95th percentile response time for journey pages must be under the configured threshold (default 3000ms)
+- Per-page p(95) < `P95_THRESHOLD_MS`ms - 95th percentile page load time for each journey page must be under the configured threshold (default 3000ms). Each journey page has its own `duration_<page>` Trend metric.
 - `http_req_failed` rate == 0 - no HTTP request failures are permitted
-
-Note: The `journey_http_req_duration` metric only includes actual journey pages (start through confirmation), excluding initial navigation, login and cleardown steps.
 
 ## Running Tests
 
