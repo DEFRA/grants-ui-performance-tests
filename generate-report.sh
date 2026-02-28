@@ -34,8 +34,8 @@ awk '
             print val >> "/tmp/k6_page_" metric ".txt"
             dur_sum[metric] += val
             dur_count[metric]++
-            if (!(metric in dur_min) || val < dur_min[metric]) dur_min[metric] = val
-            if (!(metric in dur_max) || val > dur_max[metric]) dur_max[metric] = val
+            if (!(metric in dur_min) || val+0 < dur_min[metric]) dur_min[metric] = val+0
+            if (!(metric in dur_max) || val+0 > dur_max[metric]) dur_max[metric] = val+0
         }
 
         if (metric == "http_req_failed" && val == 1) {
