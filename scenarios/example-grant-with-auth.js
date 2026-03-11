@@ -55,6 +55,7 @@ export const options = {
         duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_print_submitted_application: [`p(95)<${P95_THRESHOLD_MS}`],
+        checks: ['rate==1'],
         http_req_failed: ['rate==0']
     }
 }
@@ -102,45 +103,54 @@ export default function () {
         })
 
         group('start', () => {
+            expect(response.url).to.include('start')
             durationStart.add(response.timings.duration)
             submitJourneyForm()
         })
 
         group('yes-no-field', () => {
+            expect(response.url).to.include('yes-no-field')
             durationYesNoField.add(response.timings.duration)
             submitJourneyForm({ yesNoField: 'true' })
         })
 
         group('autocomplete-field', () => {
+            expect(response.url).to.include('autocomplete-field')
             durationAutocompleteField.add(response.timings.duration)
             submitJourneyForm({ autocompleteField: 'ENG' })
         })
 
         group('radios-field', () => {
+            expect(response.url).to.include('radios-field')
             durationRadiosField.add(response.timings.duration)
             submitJourneyForm({ radiosField: 'radiosFieldOption-A2' })
         })
 
         group('checkboxes-field', () => {
+            expect(response.url).to.include('checkboxes-field')
             durationCheckboxesField.add(response.timings.duration)
             submitJourneyForm({ checkboxesField: 'checkboxesFieldOption-A1' })
         })
 
         group('number-field', () => {
+            expect(response.url).to.include('number-field')
             durationNumberField.add(response.timings.duration)
             submitJourneyForm({ numberField: '100000' })
         })
 
         group('date-parts-field', () => {
+            expect(response.url).to.include('date-parts-field')
             durationDatePartsField.add(response.timings.duration)
+            const { day, month, year } = todayParts()
             submitJourneyForm({
-                datePartsField__day: '01',
-                datePartsField__month: '03',
-                datePartsField__year: '2026'
+                datePartsField__day: day,
+                datePartsField__month: month,
+                datePartsField__year: year
             })
         })
 
         group('month-year-field', () => {
+            expect(response.url).to.include('month-year-field')
             durationMonthYearField.add(response.timings.duration)
             submitJourneyForm({
                 monthYearField__month: '12',
@@ -149,16 +159,19 @@ export default function () {
         })
 
         group('select-field', () => {
+            expect(response.url).to.include('select-field')
             durationSelectField.add(response.timings.duration)
             submitJourneyForm({ selectField: 'selectFieldOption-A1' })
         })
 
         group('multiline-text-field', () => {
+            expect(response.url).to.include('multiline-text-field')
             durationMultilineTextField.add(response.timings.duration)
             submitJourneyForm({ multilineTextField: 'Lorem ipsum' })
         })
 
         group('multi-field-form', () => {
+            expect(response.url).to.include('multi-field-form')
             durationMultiFieldForm.add(response.timings.duration)
             submitJourneyForm({
                 applicantName: 'James Test-Farmer',
@@ -174,16 +187,19 @@ export default function () {
         })
 
         group('summary', () => {
+            expect(response.url).to.include('summary')
             durationSummary.add(response.timings.duration)
             submitJourneyForm()
         })
 
         group('declaration', () => {
+            expect(response.url).to.include('declaration')
             durationDeclaration.add(response.timings.duration)
             submitJourneyForm()
         })
 
         group('confirmation', () => {
+            expect(response.url).to.include('confirmation')
             durationConfirmation.add(response.timings.duration)
             expect(response.body).to.include('EGWA-')
         })
@@ -191,10 +207,20 @@ export default function () {
         group('print-submitted-application', () => {
             const printPath = response.html().find(`a:contains('View / Print submitted application')`).attr('href')
             response = http.get(`${HOST_URL}${printPath}`)
+            expect(response.url).to.include('print-submitted-application')
             durationPrintSubmittedApplication.add(response.timings.duration)
         })
     } catch (error) {
         console.error(`Error for URL: ${response?.url}, error: ${error.message}`)
         throw error
+    }
+}
+
+function todayParts() {
+    const today = new Date()
+    return {
+        day: String(today.getDate()).padStart(2, '0'),
+        month: String(today.getMonth() + 1).padStart(2, '0'),
+        year: String(today.getFullYear())
     }
 }
