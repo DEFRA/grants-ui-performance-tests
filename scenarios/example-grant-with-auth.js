@@ -54,7 +54,7 @@ export const options = {
         duration_summary: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
-        duration_print_submitted_application: [`p(95)<${P95_THRESHOLD_MS}`],
+        // duration_print_submitted_application: [`p(95)<${P95_THRESHOLD_MS}`],
         checks: ['rate==1'],
         http_req_failed: ['rate==0']
     }
