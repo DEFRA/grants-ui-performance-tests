@@ -104,7 +104,7 @@ grants-ui-performance-tests/
 ├── scenarios/             # k6 test scenarios (.js files)
 │   ├── lib/               # Vendored third-party k6 libraries
 │   ├── example-grant-with-auth.js
-│   └── users.csv          # User data (CRNs for authentication)
+│   └── dal-users.csv      # User data (CRNs and SBIs for authentication)
 ├── reports/               # Generated test reports (gitignored)
 ├── data-seeding/          # Tools for seeding backend test data
 ├── Dockerfile             # Container image definition
@@ -130,15 +130,14 @@ Then update the version in the table above.
 
 ## Test Data
 
-The `users.csv` file contains Customer Reference Numbers (CRNs) for 700 unique test users. These users match the 700 available users in the `fcp-defra-id-stub` service in **Perf-Test**.
+The `dal-users.csv` file contains Customer Reference Numbers (CRNs) for test users. These users are sourced from the DAL (Data Access Layer) and match users available in the **Perf-Test** environment.
 
 **Format:**
 ```csv
 crn
-1000000001
-1000000002
+1102838829
+1103623923
 ...
-1000000700
 ```
 
 ## CI Pipeline

@@ -20,7 +20,9 @@ const durationDatePartsField = new Trend('duration_date_parts_field')
 const durationMonthYearField = new Trend('duration_month_year_field')
 const durationSelectField = new Trend('duration_select_field')
 const durationMultilineTextField = new Trend('duration_multiline_text_field')
+const durationSelectLandParcel = new Trend('duration_select_land_parcel')
 const durationMultiFieldForm = new Trend('duration_multi_field_form')
+const durationCheckDetails = new Trend('duration_check_details')
 const durationSummary = new Trend('duration_summary')
 const durationDeclaration = new Trend('duration_declaration')
 const durationConfirmation = new Trend('duration_confirmation')
@@ -50,7 +52,9 @@ export const options = {
         duration_month_year_field: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_select_field: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_multiline_text_field: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_select_land_parcel: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_multi_field_form: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_check_details: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_summary: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
@@ -61,7 +65,7 @@ export const options = {
 }
 
 const users = new SharedArray('users', function () {
-    const data = open('./users.csv').split('\n').slice(1) // Skip header
+    const data = open('./dal-users.csv').split('\n').slice(1) // Skip header
     return data.filter(line => line.trim()).map(line => line.trim())
 })
 
@@ -170,6 +174,13 @@ export default function () {
             submitJourneyForm({ multilineTextField: 'Lorem ipsum' })
         })
 
+        group('select-land-parcel', () => {
+            expect(response.url).to.include('select-land-parcel')
+            durationSelectLandParcel.add(response.timings.duration)
+            const firstParcel = response.html().find('input#landParcels').attr('value')
+            submitJourneyForm({ landParcels: firstParcel })
+        })
+
         group('multi-field-form', () => {
             expect(response.url).to.include('multi-field-form')
             durationMultiFieldForm.add(response.timings.duration)
@@ -184,6 +195,12 @@ export default function () {
                 applicantBusinessAddress__county: 'Northamptonshire',
                 applicantBusinessAddress__postcode: 'NN7 1NN'
             })
+        })
+
+        group('check-details', () => {
+            expect(response.url).to.include('check-details')
+            durationCheckDetails.add(response.timings.duration)
+            submitJourneyForm({ detailsConfirmed: 'true' })
         })
 
         group('summary', () => {
