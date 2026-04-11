@@ -60,8 +60,8 @@ awk '
     }
 ' "$METRICS_FILE"
 
-# Calculate p95 per page metric, write duration_stats.csv in journey order
-JOURNEY_ORDER="duration_start duration_yes_no_field duration_autocomplete_field duration_radios_field duration_checkboxes_field duration_number_field duration_date_parts_field duration_month_year_field duration_select_field duration_multiline_text_field duration_multi_field_form duration_summary duration_declaration duration_confirmation duration_print_submitted_application"
+# Calculate p95 per page metric, write duration_stats.csv
+JOURNEY_ORDER=$([ -f /tmp/k6_page_meta.txt ] && awk -F',' '{print $1}' /tmp/k6_page_meta.txt || true)
 
 > /tmp/duration_stats.csv
 for metric in $JOURNEY_ORDER; do

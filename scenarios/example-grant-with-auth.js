@@ -177,7 +177,7 @@ export default function () {
         group('select-land-parcel', () => {
             expect(response.url).to.include('select-land-parcel')
             durationSelectLandParcel.add(response.timings.duration)
-            const firstParcel = response.html().find('input#landParcels').attr('value')
+            const firstParcel = response.html().find('input[name="landParcels"]').first().attr('value')
             submitJourneyForm({ landParcels: firstParcel })
         })
 
