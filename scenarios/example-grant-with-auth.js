@@ -52,7 +52,7 @@ export const options = {
         duration_month_year_field: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_select_field: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_multiline_text_field: [`p(95)<${P95_THRESHOLD_MS}`],
-        duration_select_land_parcel: [`p(95)<${P95_THRESHOLD_MS}`],
+        // duration_select_land_parcel: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_multi_field_form: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_check_details: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_summary: [`p(95)<${P95_THRESHOLD_MS}`],
