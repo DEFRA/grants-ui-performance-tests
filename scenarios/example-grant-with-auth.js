@@ -103,7 +103,7 @@ export default function () {
                 submitForm({ sbi: sbiValue })
             }
             clickLink('Clear application state')
-            navigateTo(`${HOST_URL}/example-grant-with-auth/start`)
+            navigateTo(`${HOST_URL}/example-grant-with-auth`)
         })
 
         group('start', () => {
