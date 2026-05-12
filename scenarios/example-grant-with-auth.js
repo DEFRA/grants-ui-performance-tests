@@ -70,6 +70,8 @@ const users = new SharedArray('users', function () {
 })
 
 export default function () {
+    return // DISABLED
+
     let response = null
 
     const navigateTo = function (url) {
