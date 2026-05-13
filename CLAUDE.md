@@ -28,6 +28,8 @@ The scenario (`example-grant-with-auth.js`) walks a virtual user through the ful
 
 Each page has a corresponding p95 threshold enforced via `P95_THRESHOLD_MS` (default 3000ms).
 
+**The focus is individual page response times, not overall journey duration.** Every page in the journey — including terminal/dead-end pages — is visited and measured. Terminal pages are reached by submitting the triggering value, then the test navigates back to the previous page and resubmits with the happy-path value to continue the journey. The journey should mirror `reusable-components.feature` in `grants-ui` as closely as possible.
+
 ## User data
 
 `dal-users.csv` contains CRNs only (no SBIs). The first SBI is selected dynamically from the page if the organisations screen appears. The filename `dal-users.csv` is significant — do not rename it.
