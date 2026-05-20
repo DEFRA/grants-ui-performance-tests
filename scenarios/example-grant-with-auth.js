@@ -104,7 +104,7 @@ export default function () {
 
     const submitForm = function (fields) {
         response = response.submitForm({
-            formSelector: `form:has(input[type='submit'][value='Continue'])`,
+            formSelector: `form:has(button[type='submit']:contains('Continue'))`,
             fields: fields
         })
     }
