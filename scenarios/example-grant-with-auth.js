@@ -2,13 +2,15 @@ import http from 'k6/http'
 import { sleep, group } from 'k6'
 import { expect } from './lib/k6chaijs.js'
 import { SharedArray } from 'k6/data'
-import { Trend } from 'k6/metrics'
+import { Trend, Counter } from 'k6/metrics'
 
 const HOST_URL = __ENV.HOST_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
 const P95_THRESHOLD_MS = __ENV.P95_THRESHOLD_MS || 3000
+
+const successfulLogins = new Counter('successful_logins')
 
 const durationStart = new Trend('duration_start')
 const durationCheckDetails = new Trend('duration_check_details')
@@ -81,6 +83,7 @@ export const options = {
         duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_print_submitted_application: [`p(95)<${P95_THRESHOLD_MS}`],
+        successful_logins: ['count>0'],
         checks: ['rate==1'],
         http_req_failed: ['rate==0']
     }
@@ -104,7 +107,7 @@ export default function () {
 
     const submitForm = function (fields) {
         response = response.submitForm({
-            formSelector: `form:has(button[type='submit']:contains('Continue'))`,
+            formSelector: `form:not([action='/cookies'])`,
             fields: fields
         })
     }
@@ -121,12 +124,14 @@ export default function () {
         const crn = users[__VU % users.length]
 
         group('login-and-clear-state', () => {
-            navigateTo(`${HOST_URL}/example-grant-with-auth/start`)
+            navigateTo(`${HOST_URL}/example-grant-with-auth`)
             submitForm({ crn: crn, password: 'x' })
             if (response.url.includes('/organisations')) {
                 const sbiValue = response.html().find('#sbi').first().attr('value')
                 submitForm({ sbi: sbiValue })
             }
+            expect(response.url).to.include(HOST_URL)
+            successfulLogins.add(1)
             clickLink('Clear application state')
             navigateTo(`${HOST_URL}/example-grant-with-auth`)
         })
