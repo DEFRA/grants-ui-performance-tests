@@ -4,11 +4,19 @@ Date: 2026-07-10
 
 ## Baseline status
 
-No baseline run was available in the workspace (the scenario targets the remote
-`perf-test` host and requires its seeded DAL users). Before changing application
-code, capture five identical runs with the same `HOST_URL`, `VU_COUNT`,
-`RAMPUP_SECONDS`, `DURATION_SECONDS`, and `P95_THRESHOLD_MS`. Keep each
-`metrics.json` and record the p95 and mean for every `duration_*` metric.
+An historical baseline is now available in
+[`performance-metrics-10-07-2026.md`](./performance-metrics-10-07-2026.md).
+It covers 18 of the latest 20 GitHub Actions runs containing the performance
+job. Four runs failed at least one K6 threshold; multiline text failed in two
+runs. The multi-field metric was zero in every run and is not a valid baseline
+measurement.
+
+These runs predate the timing-alignment change. After that change has run in CI,
+capture five identical corrected-harness runs with the same `HOST_URL`,
+`VU_COUNT`, `RAMPUP_SECONDS`, `DURATION_SECONDS`, and `P95_THRESHOLD_MS`.
+Keep each `metrics.json` and record the p95 and mean for every `duration_*`
+metric. Treat the historical figures as directional context, not as a directly
+comparable baseline.
 
 For an iteration, compare the mean of the five run means (and separately the
 mean of the five p95s). Report the aggregate change as:
