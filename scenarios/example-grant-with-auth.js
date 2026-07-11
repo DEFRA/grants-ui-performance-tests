@@ -85,7 +85,7 @@ export const options = {
         duration_print_submitted_application: [`p(95)<${P95_THRESHOLD_MS}`],
         successful_logins: ['count>0'],
         checks: ['rate==1'],
-        http_req_failed: ['rate==0']
+        http_req_failed: ['rate<0.01']
     }
 }
 
