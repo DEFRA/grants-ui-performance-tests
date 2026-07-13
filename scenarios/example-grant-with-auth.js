@@ -135,8 +135,7 @@ export default function () {
         })
 
         group('clear-state', () => {
-            clickLink('Clear application state')
-            navigateTo(`${HOST_URL}/example-grant-with-auth`)
+            navigateTo(`${HOST_URL}/clear-application-state`)
         })
 
         group('start', () => {
