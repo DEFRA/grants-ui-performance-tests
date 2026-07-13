@@ -123,7 +123,7 @@ export default function () {
     try {
         const crn = users[__VU % users.length]
 
-        group('login-and-clear-state', () => {
+        group('login', () => {
             navigateTo(`${HOST_URL}/example-grant-with-auth`)
             submitForm({ crn: crn, password: 'x' })
             if (response.url.includes('/organisations')) {
@@ -132,6 +132,9 @@ export default function () {
             }
             expect(response.url).to.include(HOST_URL)
             successfulLogins.add(1)
+        })
+
+        group('clear-state', () => {
             clickLink('Clear application state')
             navigateTo(`${HOST_URL}/example-grant-with-auth`)
         })
