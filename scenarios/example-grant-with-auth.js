@@ -113,12 +113,20 @@ export default function () {
     }
 
     const submitJourneyForm = function (fields) {
+        // Assign the page trend before submitting so it is recorded against
+        // the response produced by this page's form submission.
         sleep(3) // Mimic human interaction
         fields = fields ?? {}
         let crumb = response.html().find(`input[name='crumb']`).attr('value')
         fields['crumb'] = crumb
         submitForm(fields)
+        if (pendingTrend) {
+            pendingTrend.add(response.timings.duration)
+            pendingTrend = null
+        }
     }
+
+    let pendingTrend = null
 
     try {
         const crn = users[__VU % users.length]
@@ -140,58 +148,58 @@ export default function () {
 
         group('start', () => {
             expect(response.url).to.include('start')
-            durationStart.add(response.timings.duration)
+            pendingTrend = durationStart
             submitJourneyForm()
         })
 
         group('check-details', () => {
             expect(response.url).to.include('check-details')
-            durationCheckDetails.add(response.timings.duration)
+            pendingTrend = durationCheckDetails
             submitJourneyForm({ detailsConfirmed: 'false' })
         })
 
         group('update-details', () => {
             expect(response.url).to.include('update-details')
-            durationUpdateDetails.add(response.timings.duration)
+            pendingTrend = durationUpdateDetails
             navigateTo(`${HOST_URL}/example-grant-with-auth/check-details`)
             submitJourneyForm({ detailsConfirmed: 'true' })
         })
 
         group('yes-no-field', () => {
             expect(response.url).to.include('yes-no-field')
-            durationYesNoField.add(response.timings.duration)
+            pendingTrend = durationYesNoField
             submitJourneyForm({ yesNoField: 'false' })
         })
 
         group('terminal-page', () => {
             expect(response.url).to.include('terminal-page')
-            durationTerminalPage.add(response.timings.duration)
+            pendingTrend = durationTerminalPage
             navigateTo(`${HOST_URL}/example-grant-with-auth/yes-no-field`)
             submitJourneyForm({ yesNoField: 'true' })
         })
 
         group('autocomplete-field', () => {
             expect(response.url).to.include('autocomplete-field')
-            durationAutocompleteField.add(response.timings.duration)
+            pendingTrend = durationAutocompleteField
             submitJourneyForm({ autocompleteField: 'ENG' })
         })
 
         group('radios-field', () => {
             expect(response.url).to.include('radios-field')
-            durationRadiosField.add(response.timings.duration)
+            pendingTrend = durationRadiosField
             // Option one triggers the conditional-page branch
             submitJourneyForm({ radiosField: 'radiosFieldOption-A1' })
         })
 
         group('conditional-page', () => {
             expect(response.url).to.include('conditional-page')
-            durationConditionalPage.add(response.timings.duration)
+            pendingTrend = durationConditionalPage
             submitJourneyForm()
         })
 
         group('checkboxes-field', () => {
             expect(response.url).to.include('checkboxes-field')
-            durationCheckboxesField.add(response.timings.duration)
+            pendingTrend = durationCheckboxesField
             submitJourneyForm({ checkboxesField: ['checkboxesFieldOption-A2', 'checkboxesFieldOption-A3'] })
         })
 
@@ -202,26 +210,26 @@ export default function () {
 
         group('number-field-validation', () => {
             expect(response.url).to.include('number-field-validation')
-            durationNumberFieldValidation.add(response.timings.duration)
+            pendingTrend = durationNumberFieldValidation
             submitJourneyForm({ numberFieldValidation: '100000' })
         })
 
         group('number-field-routing', () => {
             expect(response.url).to.include('number-field-routing')
-            durationNumberFieldRouting.add(response.timings.duration)
+            pendingTrend = durationNumberFieldRouting
             submitJourneyForm({ numberFieldRouting: '150000' })
         })
 
         group('number-too-high', () => {
             expect(response.url).to.include('number-too-high')
-            durationNumberTooHigh.add(response.timings.duration)
+            pendingTrend = durationNumberTooHigh
             navigateTo(`${HOST_URL}/example-grant-with-auth/number-field-routing`)
             submitJourneyForm({ numberFieldRouting: '50000' })
         })
 
         group('date-parts-field', () => {
             expect(response.url).to.include('date-parts-field')
-            durationDatePartsField.add(response.timings.duration)
+            pendingTrend = durationDatePartsField
             const { day, month, year } = todayParts()
             submitJourneyForm({
                 datePartsField__day: day,
@@ -232,7 +240,7 @@ export default function () {
 
         group('month-year-field', () => {
             expect(response.url).to.include('month-year-field')
-            durationMonthYearField.add(response.timings.duration)
+            pendingTrend = durationMonthYearField
             submitJourneyForm({
                 monthYearField__month: '12',
                 monthYearField__year: '2025'
@@ -241,31 +249,31 @@ export default function () {
 
         group('select-field', () => {
             expect(response.url).to.include('select-field')
-            durationSelectField.add(response.timings.duration)
+            pendingTrend = durationSelectField
             submitJourneyForm({ selectField: 'selectFieldOption-A3' })
         })
 
         group('multiline-text-field', () => {
             expect(response.url).to.include('multiline-text-field')
-            durationMultilineTextField.add(response.timings.duration)
+            pendingTrend = durationMultilineTextField
             submitJourneyForm({ multilineTextField: 'Lorem ipsum' })
         })
 
         group('email-address-field', () => {
             expect(response.url).to.include('email-address-field')
-            durationEmailAddressField.add(response.timings.duration)
+            pendingTrend = durationEmailAddressField
             submitJourneyForm({ emailAddressField: 'test@example.com' })
         })
 
         group('telephone-number-field', () => {
             expect(response.url).to.include('telephone-number-field')
-            durationTelephoneNumberField.add(response.timings.duration)
+            pendingTrend = durationTelephoneNumberField
             submitJourneyForm({ telephoneNumberField: '01234 567890' })
         })
 
         group('uk-address-field', () => {
             expect(response.url).to.include('uk-address-field')
-            durationUkAddressField.add(response.timings.duration)
+            pendingTrend = durationUkAddressField
             submitJourneyForm({
                 ukAddressField__addressLine1: '1 Example Street',
                 ukAddressField__town: 'Exampleton',
@@ -275,7 +283,7 @@ export default function () {
 
         group('location-components', () => {
             expect(response.url).to.include('location-components')
-            durationLocationComponents.add(response.timings.duration)
+            pendingTrend = durationLocationComponents
             submitJourneyForm({
                 eastingNorthingField__easting: '530000',
                 eastingNorthingField__northing: '180000',
@@ -289,13 +297,13 @@ export default function () {
 
         group('hidden-field', () => {
             expect(response.url).to.include('hidden-field')
-            durationHiddenField.add(response.timings.duration)
+            pendingTrend = durationHiddenField
             submitJourneyForm()
         })
 
         group('multi-field-form', () => {
             expect(response.url).to.include('multi-field-form')
-            durationMultiFieldForm.add(response.timings.duration)
+            pendingTrend = durationMultiFieldForm
             submitJourneyForm({
                 projectName: 'Test project',
                 projectDescription: 'Project description for the journey runner.',
@@ -305,7 +313,7 @@ export default function () {
 
         group('repeat-page', () => {
             expect(response.url).to.include('repeat-page')
-            durationRepeatPage.add(response.timings.duration)
+            pendingTrend = durationRepeatPage
             // First submit adds the item
             submitJourneyForm({
                 repeatItemName: 'Repeat item example',
@@ -317,34 +325,38 @@ export default function () {
 
         group('select-land-parcel', () => {
             expect(response.url).to.include('select-land-parcel')
-            durationSelectLandParcel.add(response.timings.duration)
+            pendingTrend = durationSelectLandParcel
             const firstParcel = response.html().find('input[name="landParcels"]').first().attr('value')
             submitJourneyForm({ landParcels: firstParcel })
         })
 
         group('summary', () => {
             expect(response.url).to.include('summary')
-            durationSummary.add(response.timings.duration)
+            pendingTrend = durationSummary
             submitJourneyForm()
         })
 
         group('declaration', () => {
             expect(response.url).to.include('declaration')
-            durationDeclaration.add(response.timings.duration)
+            pendingTrend = durationDeclaration
             submitJourneyForm()
         })
 
         group('confirmation', () => {
             expect(response.url).to.include('confirmation')
+            // Confirmation has no form submission of its own; measure the
+            // response that arrived from the declaration submission.
             durationConfirmation.add(response.timings.duration)
             expect(response.body).to.include('EGWA-')
         })
 
         group('print-submitted-application', () => {
+            pendingTrend = durationPrintSubmittedApplication
             const printPath = response.html().find(`a:contains('View / Print submitted application')`).attr('href')
             response = http.get(`${HOST_URL}${printPath}`)
             expect(response.url).to.include('print-submitted-application')
-            durationPrintSubmittedApplication.add(response.timings.duration)
+            pendingTrend.add(response.timings.duration)
+            pendingTrend = null
         })
     } catch (error) {
         console.error(`Error for URL: ${response?.url}, error: ${error.message}`)
