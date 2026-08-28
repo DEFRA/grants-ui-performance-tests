@@ -8,12 +8,31 @@ if [ -n "$CDP_HTTP_PROXY" ]; then
    export NO_PROXY=".cdp-int.defra.cloud"
 fi
 
+if [ -z "$PROFILE" ]; then
+    echo "PROFILE is not set. Set it to the journey to run, e.g. PROFILE=woodland"
+    exit 1
+fi
+
+PROFILE=$(echo "$PROFILE" | tr '[:upper:]' '[:lower:]')
+SCENARIO="scenarios/$PROFILE/$PROFILE.js"
+
+if [ ! -f "$SCENARIO" ]; then
+    echo "Unknown PROFILE: $PROFILE (expected $SCENARIO to exist)"
+    exit 1
+fi
+
+echo "Running profile: $PROFILE ($SCENARIO)"
+
 mkdir -p /reports
 
+# Remove any metrics.json/report.html left behind by a previous (possibly interrupted)
+# run on this mount, so a stale or corrupted file is never fed into generate-report.sh.
+rm -f /reports/metrics.json /reports/report.html
+
 if [ "$GENERATE_REPORT" = "true" ]; then
-    k6 run --out json=/reports/metrics.json scenarios/example-grant-with-auth.js
+    k6 run --out json=/reports/metrics.json "$SCENARIO"
 else
-    k6 run scenarios/example-grant-with-auth.js
+    k6 run "$SCENARIO"
 fi
 
 K6_EXIT_CODE=$?
@@ -21,13 +40,20 @@ K6_EXIT_CODE=$?
 if [ "$GENERATE_REPORT" = "true" ]; then
     # Generate HTML report from metrics
     echo "Generating report"
-    ./generate-report.sh /reports/metrics.json /reports/report.html "$K6_EXIT_CODE"
+    ./generate-report.sh /reports/metrics.json /reports/report.html "$K6_EXIT_CODE" \
+        "${HOST_URL:-https://grants-ui.perf-test.cdp-int.defra.cloud}" \
+        "${DURATION_SECONDS:-180}" \
+        "${RAMPUP_SECONDS:-30}" \
+        "${VU_COUNT:-100}" \
+        "${P95_THRESHOLD_MS:-3000}" \
+        "$PROFILE"
 
     # Publish the results into S3 so they can be displayed in the CDP Portal
     if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
        # Copy the report file to the S3 bucket
        if [ -f "/reports/report.html" ]; then
           aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/report.html" "$RESULTS_OUTPUT_S3_PATH/index.html"
+          aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/metrics.json" "$RESULTS_OUTPUT_S3_PATH/metrics.json"
           if [ $? -eq 0 ]; then
             echo "Report file published to $RESULTS_OUTPUT_S3_PATH"
           fi

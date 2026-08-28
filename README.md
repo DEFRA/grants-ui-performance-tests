@@ -4,9 +4,11 @@
 
 Performance test suite for Defra's [grants-ui](https://github.com/DEFRA/grants-ui) platform, maintained by the Grants Application Enablement (GAE) team.
 
+This repo is the home for all `grants-ui` performance test journeys. As new grant journeys are built on `grants-ui`, their k6 scenarios are added here — see [Adding a New Journey](#adding-a-new-journey) — rather than split out into separate repos.
+
 ## Test Coverage
 
-The suite provides performance testing for a generic example grant journey using reusable `grants-ui` components.
+The suite provides performance testing for multiple grant journeys, each using reusable `grants-ui` components. Which journey runs is selected via the `PROFILE` environment variable.
 
 ## Technology Stack
 
@@ -14,10 +16,11 @@ The suite provides performance testing for a generic example grant journey using
 
 ## Test Scenarios
 
-Individual test scripts are located in the `/scenarios` directory, with each script targeting a specific grant application journey.
+Individual test scripts are located under the `/scenarios` directory, one subfolder per journey (profile), with each script targeting a specific grant application journey.
 
 Current test scenarios:
-- `example-grant-with-auth.js` - Example grant application journey with Defra ID authentication
+- `example-grant-with-auth/example-grant-with-auth.js` - Example grant application journey with Defra ID authentication (`PROFILE=example-grant-with-auth`)
+- `woodland/woodland.js` - Woodland Management Plan (WMP) grant application journey with Defra ID authentication (`PROFILE=woodland`)
 
 ## Configuration
 
@@ -25,6 +28,7 @@ Test scenarios are parameterized via environment variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `PROFILE` | _none — required_ | Selects which journey's scenario to run (`example-grant-with-auth` or `woodland`); the suite exits immediately if unset |
 | `HOST_URL` | `https://grants-ui.perf-test.cdp-int.defra.cloud` | Base URL of the grants-ui instance under test |
 | `DURATION_SECONDS` | `180` | Total test duration in seconds |
 | `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
@@ -74,19 +78,20 @@ Tests are executed from the CDP Portal under the **Test Suites** section for the
 docker build -t grants-ui-performance-tests .
 ```
 
-**Run with defaults:**
-```bash
-# Git Bash on Windows
-MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/reports:/reports" grants-ui-performance-tests
+**Run standalone (via `run-perf-test.sh`):**
 
-# Linux/Mac
-docker run --rm -v "$(pwd)/reports:/reports" grants-ui-performance-tests
+`PROFILE` is required — the suite exits immediately if it isn't set:
+```bash
+PROFILE=example-grant-with-auth bash run-perf-test.sh
+# or
+PROFILE=woodland bash run-perf-test.sh
 ```
 
 **Run with custom parameters:**
 ```bash
 # Git Bash on Windows
 MSYS_NO_PATHCONV=1 docker run --rm \
+  -e PROFILE=woodland \
   -e DURATION_SECONDS=60 \
   -e RAMPUP_SECONDS=10 \
   -e VU_COUNT=10 \
@@ -101,17 +106,30 @@ Reports are written to the `./reports` directory.
 
 ```
 grants-ui-performance-tests/
-├── scenarios/             # k6 test scenarios (.js files)
-│   ├── lib/               # Vendored third-party k6 libraries
-│   ├── example-grant-with-auth.js
-│   └── dal-users.csv      # User data (CRNs and SBIs for authentication)
+├── scenarios/                          # k6 test scenarios, one folder per journey (profile)
+│   ├── lib/                            # Vendored third-party k6 libraries, shared across journeys
+│   ├── example-grant-with-auth/
+│   │   ├── example-grant-with-auth.js
+│   │   └── dal-users.csv               # User data (CRNs) for this journey
+│   └── woodland/
+│       ├── woodland.js
+│       └── dal-users.csv               # User data (CRNs) for this journey
 ├── reports/               # Generated test reports (gitignored)
 ├── data-seeding/          # Tools for seeding backend test data
 ├── Dockerfile             # Container image definition
-├── entrypoint.sh          # Test execution script
+├── entrypoint.sh          # Test execution script; selects the scenario via PROFILE
 ├── generate-report.sh     # HTML report generation script
+├── run-perf-test.sh       # Build and run standalone locally against Perf-Test-style defaults
 └── README.md
 ```
+
+## Adding a New Journey
+
+When a new grant journey goes live on `grants-ui`, add its k6 scenario to this repo rather than creating a new performance test repo:
+
+1. Create `scenarios/<profile-name>/<profile-name>.js` and its own `scenarios/<profile-name>/dal-users.csv`. The folder and script must share the profile name, since `entrypoint.sh` derives the scenario path directly from `PROFILE` (`scenarios/<profile>/<profile>.js`, lowercased).
+2. Import the shared assertion lib as `../lib/k6chaijs.js`.
+3. Add the new journey to the "Current test scenarios" list and the `PROFILE` row in [Configuration](#configuration) above, and to the equivalent tables in `AGENTS.md`.
 
 ## Dependencies
 
@@ -130,7 +148,7 @@ Then update the version in the table above.
 
 ## Test Data
 
-The `dal-users.csv` file contains Customer Reference Numbers (CRNs) for test users. These users are sourced from the DAL (Data Access Layer) and match users available in the **Perf-Test** environment.
+Each journey's `dal-users.csv` file contains Customer Reference Numbers (CRNs) for test users. These users are sourced from the DAL (Data Access Layer) and match users available in the **Perf-Test** environment. The two journeys' user sets are independent — a CRN valid for one is not necessarily valid for the other.
 
 **Format:**
 ```csv

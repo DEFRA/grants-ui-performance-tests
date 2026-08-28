@@ -6,6 +6,12 @@
 METRICS_FILE="$1"
 OUTPUT_FILE="$2"
 K6_EXIT_CODE="${3:-0}"
+HOST_URL="${4:-}"
+DURATION_SECONDS="${5:-}"
+RAMPUP_SECONDS="${6:-}"
+VU_COUNT="${7:-}"
+P95_THRESHOLD_MS="${8:-}"
+PROFILE="${9:-}"
 
 if [ ! -f "$METRICS_FILE" ]; then
     echo "Metrics file not found: $METRICS_FILE"
@@ -90,7 +96,15 @@ cat > "$OUTPUT_FILE" << 'HTMLHEADER'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>k6 Performance Test Report</title>
+HTMLHEADER
+
+if [ -n "$PROFILE" ]; then
+    echo "    <title>Performance Test Report: ${PROFILE}</title>" >> "$OUTPUT_FILE"
+else
+    echo "    <title>Performance Test Report</title>" >> "$OUTPUT_FILE"
+fi
+
+cat >> "$OUTPUT_FILE" << 'HTMLHEADER'
     <style>
         * { box-sizing: border-box; }
         body {
@@ -151,11 +165,33 @@ cat > "$OUTPUT_FILE" << 'HTMLHEADER'
 </head>
 <body>
     <div class="container">
-        <h1>k6 Performance Test Report</h1>
 HTMLHEADER
 
+# Add title (with profile if provided) — outside the quoted heredoc so $PROFILE expands
+if [ -n "$PROFILE" ]; then
+    echo "        <h1>Performance Test Report: ${PROFILE}</h1>" >> "$OUTPUT_FILE"
+else
+    echo "        <h1>Performance Test Report</h1>" >> "$OUTPUT_FILE"
+fi
+
 # Add timestamp
-echo "        <p class=\"timestamp\">Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')</p>" >> "$OUTPUT_FILE"
+echo "        <p class=\"timestamp\">Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC') &nbsp;&bull;&nbsp; <a href=\"metrics.json\">Download raw metrics</a></p>" >> "$OUTPUT_FILE"
+
+# Add config panel if env vars were provided
+if [ -n "$HOST_URL" ]; then
+    cat >> "$OUTPUT_FILE" << CONFIGPANEL
+        <table style="margin-bottom:30px">
+            <thead><tr><th colspan="2">Test Configuration</th></tr></thead>
+            <tbody>
+                <tr><td><strong>Profile</strong></td><td>${PROFILE:-N/A}</td></tr>
+                <tr><td><strong>Host</strong></td><td>${HOST_URL}</td></tr>
+                <tr><td><strong>Virtual Users</strong></td><td>${VU_COUNT}</td></tr>
+                <tr><td><strong>Duration</strong></td><td>${DURATION_SECONDS}s (ramp-up ${RAMPUP_SECONDS}s)</td></tr>
+                <tr><td><strong>p95 Threshold</strong></td><td>${P95_THRESHOLD_MS}ms</td></tr>
+            </tbody>
+        </table>
+CONFIGPANEL
+fi
 
 # Calculate totals for summary
 TOTAL_REQUESTS=$(awk -F',' '{sum+=$2} END {print sum+0}' /tmp/duration_stats.csv)
@@ -219,6 +255,10 @@ SUMMARY
 
 # Add table rows
 while IFS=',' read -r page requests avg min max p95; do
+    p95_class="duration"
+    if [ -n "$P95_THRESHOLD_MS" ] && awk "BEGIN{exit !($p95 > $P95_THRESHOLD_MS)}"; then
+        p95_class="duration fail"
+    fi
     cat >> "$OUTPUT_FILE" << ROW
                 <tr>
                     <td><strong>${page}</strong></td>
@@ -226,7 +266,7 @@ while IFS=',' read -r page requests avg min max p95; do
                     <td class="duration">${avg}</td>
                     <td class="duration">${min}</td>
                     <td class="duration">${max}</td>
-                    <td class="duration">${p95}</td>
+                    <td class="${p95_class}">${p95}</td>
                 </tr>
 ROW
 done < /tmp/duration_stats.csv
@@ -244,10 +284,7 @@ grep '"metric":"http_req_failed"' "$METRICS_FILE" | grep '"type":"Point"' | grep
 if [ -s /tmp/failed_requests.txt ]; then
     while read -r line; do
         # Extract group
-        err_group=$(echo "$line" | sed -n 's/.*"group":"::example-grant-with-auth::\([^"]*\)".*/\1/p')
-        if [ -z "$err_group" ]; then
-            err_group=$(echo "$line" | sed -n 's/.*"group":"::\([^"]*\)".*/\1/p')
-        fi
+        err_group=$(echo "$line" | sed -n 's/.*"group":"::\([^"]*\)".*/\1/p')
         if [ -z "$err_group" ]; then
             err_group="unknown"
         fi
@@ -301,6 +338,45 @@ ERRORFOOTER
 fi
 
 rm -f /tmp/failed_requests.txt /tmp/error_details.csv
+
+# Extract failed checks
+> /tmp/failed_checks.csv
+grep '"metric":"checks"' "$METRICS_FILE" | grep '"type":"Point"' | grep '"value":0' | while read -r line; do
+    chk=$(echo "$line" | sed -n 's/.*"check":"\([^"]*\)".*/\1/p')
+    grp=$(echo "$line" | sed -n 's/.*"group":"::\([^"]*\)".*/\1/p')
+    echo "${grp:-unknown},${chk:-unknown}" >> /tmp/failed_checks.csv
+done
+
+if [ -s /tmp/failed_checks.csv ]; then
+    cat >> "$OUTPUT_FILE" << 'CHECKHEADER'
+
+        <h2>Failed Checks</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Group</th>
+                    <th>Check</th>
+                </tr>
+            </thead>
+            <tbody>
+CHECKHEADER
+
+    while IFS=',' read -r chk_group chk_name; do
+        cat >> "$OUTPUT_FILE" << CHECKROW
+                <tr>
+                    <td><strong>${chk_group}</strong></td>
+                    <td class="fail">${chk_name}</td>
+                </tr>
+CHECKROW
+    done < /tmp/failed_checks.csv
+
+    cat >> "$OUTPUT_FILE" << 'CHECKFOOTER'
+            </tbody>
+        </table>
+CHECKFOOTER
+fi
+
+rm -f /tmp/failed_checks.csv
 
 # Close HTML
 cat >> "$OUTPUT_FILE" << 'HTMLFOOTER'
