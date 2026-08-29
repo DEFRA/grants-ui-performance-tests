@@ -2,25 +2,23 @@
 
 ## Overview
 
-Performance test suite for Defra's [grants-ui](https://github.com/DEFRA/grants-ui) platform, maintained by the Grants Application Enablement (GAE) team.
-
-This repo is the home for all `grants-ui` performance test journeys. As new grant journeys are built on `grants-ui`, their k6 scenarios are added here — see [Adding a New Journey](#adding-a-new-journey) — rather than split out into separate repos.
+Performance test suite for Defra's [grants-ui](https://github.com/DEFRA/grants-ui) application, maintained by the Grants-UI team. This repo is the home for all `grants-ui` performance test journeys. As new grant journeys are built on `grants-ui`, their k6 scenarios are added here — see [Adding a New Journey](#adding-a-new-journey) — rather than split out into separate repos as previously.
 
 ## Test Coverage
 
-The suite provides performance testing for multiple grant journeys, each using reusable `grants-ui` components. Which journey runs is selected via the `PROFILE` environment variable.
+The suite provides performance testing for multiple grant journeys, with which journey being run determined by the `PROFILE` environment variable.
 
 ## Technology Stack
 
-- **Grafana k6** for load testing and performance measurement
+- **Grafana k6** for load testing and performance measurement.
 
 ## Test Scenarios
 
 Individual test scripts are located under the `/scenarios` directory, one subfolder per journey (profile), with each script targeting a specific grant application journey.
 
 Current test scenarios:
-- `example-grant-with-auth/example-grant-with-auth.js` - Example grant application journey with Defra ID authentication (`PROFILE=example-grant-with-auth`)
-- `woodland/woodland.js` - Woodland Management Plan (WMP) grant application journey with Defra ID authentication (`PROFILE=woodland`)
+- `example-grant-with-auth/example-grant-with-auth.js` - Example grant application journey (`PROFILE=example-grant-with-auth`)
+- `woodland/woodland.js` - Woodland Management Plan (WMP) grant application journey (`PROFILE=woodland`)
 
 ## Configuration
 
@@ -34,7 +32,6 @@ Test scenarios are parameterized via environment variables:
 | `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
 | `VU_COUNT` | `100` | Number of concurrent virtual users |
 | `P95_THRESHOLD_MS` | `3000` | 95th percentile response time threshold in milliseconds |
-| `GENERATE_REPORT` | `true` | Toggles HTML report generation if not needed |
 
 ## Test Assertions
 
@@ -56,11 +53,11 @@ The test enforces the following thresholds:
 
 ### Via CDP Portal
 
-Tests are executed from the CDP Portal under the **Test Suites** section for the **Perf-Test** environment.
+Tests are executed from the CDP Portal under the **Test Suites** section against the **Perf-Test** environment.
 
 **Execution:**
 1. Navigate to Test Suites in the CDP Portal
-2. Configure the test via environment variables the if defaults need to be overridden
+2. Select a profile and override any environment variables using secrets
 3. Execute the test
 4. View reports in the portal once the test completes
 
@@ -68,15 +65,10 @@ Tests are executed from the CDP Portal under the **Test Suites** section for the
 - HTML reports are generated and published to S3
 - Accessible through the CDP Portal interface
 
-### Running Locally
+### Running Locally against Perf-Test
 
 **Prerequisites:**
 - Docker
-
-**Build:**
-```bash
-docker build -t grants-ui-performance-tests .
-```
 
 **Run standalone (via `run-perf-test.sh`):**
 
@@ -84,20 +76,7 @@ docker build -t grants-ui-performance-tests .
 ```bash
 PROFILE=example-grant-with-auth bash run-perf-test.sh
 # or
-PROFILE=woodland bash run-perf-test.sh
-```
-
-**Run with custom parameters:**
-```bash
-# Git Bash on Windows
-MSYS_NO_PATHCONV=1 docker run --rm \
-  -e PROFILE=woodland \
-  -e DURATION_SECONDS=60 \
-  -e RAMPUP_SECONDS=10 \
-  -e VU_COUNT=10 \
-  -e P95_THRESHOLD_MS=3000 \
-  -v "$(pwd)/reports:/reports" \
-  grants-ui-performance-tests
+PROFILE=woodland ./run-perf-test.sh
 ```
 
 Reports are written to the `./reports` directory.
@@ -158,25 +137,19 @@ crn
 ...
 ```
 
-## CI Pipeline
-
-**Manual Execution:**
-- Tests can be triggered on-demand via CDP Portal
-- Environment-specific configurations are managed as CDP Portal secrets
-
 ## Data Seeding
 
-We seed the `grants-ui-backend` MongoDB database with a year of background data to replicate querying over a large dataset for PRR purposes. The [data-seeding](data-seeding/README.md) directory contains a script to generate JSONL files that can be embedded in a `grants-ui-backend` hot fix release for direct MongoDB import.
+We have previously seeded the `grants-ui-backend` MongoDB database with several years of background data to replicate querying over a large dataset for PRR purposes. The [data-seeding](data-seeding/README.md) directory contains historic scripts to generate JSONL files that can be embedded in a `grants-ui-backend` hot fix release for direct MongoDB import. These will need updating of used again.
 
 ## Related Repositories
 
 - [grants-ui](https://github.com/DEFRA/grants-ui) - Grants application frontend service
 - [grants-ui-backend](https://github.com/DEFRA/grants-ui-backend) - Backend service, included in the scope of these tests
-- [fcp-defra-id-stub](https://github.com/DEFRA/fcp-defra-id-stub) - Authentication stub for testing
+- [fcp-defra-id-stub](https://github.com/DEFRA/fcp-defra-id-stub) - Authentication stub used for testing as opposed to the real Defra ID
 
 ## Support
 
-For questions or issues, contact the Grants Application Enablement (GAE) team.
+For questions or issues, contact the Grants-UI team.
 
 ## Licence
 

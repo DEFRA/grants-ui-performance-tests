@@ -24,9 +24,9 @@ Key files:
 - `scenarios/woodland/woodland.js` — k6 scenario for the Woodland Management Plan (WMP) journey with Defra ID authentication
 - `scenarios/woodland/dal-users.csv` — CRNs for test users for that journey
 - `scenarios/lib/k6chaijs.js` — vendored k6 assertion library, shared across journeys (do not fetch at runtime)
-- `entrypoint.sh` — Docker entrypoint; selects the scenario based on `PROFILE`, runs k6, and optionally generates an HTML report published to S3
+- `entrypoint.sh` — Docker entrypoint; selects the scenario based on `PROFILE`, runs k6, and generates an HTML report published to S3
 - `generate-report.sh` — generates an HTML report from the k6 JSON metrics output; journey-agnostic
-- `data-seeding/` — standalone Node.js scripts for seeding the `grants-ui-backend` MongoDB with background data
+- `data-seeding/` — standalone Node.js scripts that were used to seed the `grants-ui-backend` MongoDB with background data; historic, would need updating if used again
 
 ## Selecting a Journey (`PROFILE`)
 
@@ -69,8 +69,7 @@ The two journeys' `dal-users.csv` files are independent — a CRN valid for one 
 
 ## Build, Test, and Development Commands
 
-- `docker build -t grants-ui-performance-tests .`: build the k6 container.
-- `PROFILE=example-grant-with-auth bash run-perf-test.sh`: build and run standalone locally against Perf-Test-style defaults. `PROFILE` is required; use `woodland` to run that journey instead.
+- `PROFILE=example-grant-with-auth bash run-perf-test.sh`: build and run standalone locally against Perf-Test-style defaults (`run-perf-test.sh` builds the Docker image itself). `PROFILE` is required; use `woodland` to run that journey instead.
 - `npm --prefix data-seeding install`: install data-seeding dependencies.
 - `npm --prefix data-seeding test`: run data-seeding tests when present.
 
@@ -86,7 +85,6 @@ No Node.js or k6 installation needed — only Docker. On Windows, run via Git Ba
 | `RAMPUP_SECONDS` | `30` | Ramp-up period |
 | `VU_COUNT` | `100` | Concurrent virtual users |
 | `P95_THRESHOLD_MS` | `3000` | p95 response time threshold (ms) |
-| `GENERATE_REPORT` | `true` | Set to `true` in the CDP Portal environment to generate and publish an HTML report to S3 |
 
 ## Adding New Journey Pages
 

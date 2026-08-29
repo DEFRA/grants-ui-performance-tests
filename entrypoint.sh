@@ -29,39 +29,33 @@ mkdir -p /reports
 # run on this mount, so a stale or corrupted file is never fed into generate-report.sh.
 rm -f /reports/metrics.json /reports/report.html
 
-if [ "$GENERATE_REPORT" = "true" ]; then
-    k6 run --out json=/reports/metrics.json "$SCENARIO"
-else
-    k6 run "$SCENARIO"
-fi
+k6 run --out json=/reports/metrics.json "$SCENARIO"
 
 K6_EXIT_CODE=$?
 
-if [ "$GENERATE_REPORT" = "true" ]; then
-    # Generate HTML report from metrics
-    echo "Generating report"
-    ./generate-report.sh /reports/metrics.json /reports/report.html "$K6_EXIT_CODE" \
-        "${HOST_URL:-https://grants-ui.perf-test.cdp-int.defra.cloud}" \
-        "${DURATION_SECONDS:-180}" \
-        "${RAMPUP_SECONDS:-30}" \
-        "${VU_COUNT:-100}" \
-        "${P95_THRESHOLD_MS:-3000}" \
-        "$PROFILE"
+# Generate HTML report from metrics
+echo "Generating report"
+./generate-report.sh /reports/metrics.json /reports/report.html "$K6_EXIT_CODE" \
+    "${HOST_URL:-https://grants-ui.perf-test.cdp-int.defra.cloud}" \
+    "${DURATION_SECONDS:-180}" \
+    "${RAMPUP_SECONDS:-30}" \
+    "${VU_COUNT:-100}" \
+    "${P95_THRESHOLD_MS:-3000}" \
+    "$PROFILE"
 
-    # Publish the results into S3 so they can be displayed in the CDP Portal
-    if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
-       # Copy the report file to the S3 bucket
-       if [ -f "/reports/report.html" ]; then
-          aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/report.html" "$RESULTS_OUTPUT_S3_PATH/index.html"
-          aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/metrics.json" "$RESULTS_OUTPUT_S3_PATH/metrics.json"
-          if [ $? -eq 0 ]; then
-            echo "Report file published to $RESULTS_OUTPUT_S3_PATH"
-          fi
-       else
-          echo "report not found"
-          exit 1
-       fi
-    fi
+# Publish the results into S3 so they can be displayed in the CDP Portal
+if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
+   # Copy the report file to the S3 bucket
+   if [ -f "/reports/report.html" ]; then
+      aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/report.html" "$RESULTS_OUTPUT_S3_PATH/index.html"
+      aws --endpoint-url=$S3_ENDPOINT s3 cp "/reports/metrics.json" "$RESULTS_OUTPUT_S3_PATH/metrics.json"
+      if [ $? -eq 0 ]; then
+        echo "Report file published to $RESULTS_OUTPUT_S3_PATH"
+      fi
+   else
+      echo "report not found"
+      exit 1
+   fi
 fi
 
 # exit non-zero if k6 reported threshold failures
