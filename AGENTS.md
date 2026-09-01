@@ -48,7 +48,7 @@ Each scenario walks a virtual user through its full grant journey:
 3. Walk each journey page in order, submitting the form and recording a `duration_<page>` Trend metric
 4. Assert the confirmation page contains a reference number (`EGWA-` for example-grant-with-auth, `WMP-` for woodland)
 
-Each page has a corresponding p95 threshold enforced via `P95_THRESHOLD_MS` (default 3000ms).
+Each page has a corresponding p95 threshold enforced via `P95_THRESHOLD_MS` (default 3000ms). HTTP request failures are tolerated up to `HTTP_FAIL_RATE_THRESHOLD` (default 0.01, i.e. 1%) rather than failing the run on a single bad response.
 
 **The focus is individual interaction response times, not overall journey duration.** Every interaction in the journey — including terminal/dead-end pages — is visited and measured. Terminal pages are reached by submitting the triggering value, then the test navigates back to the previous page and resubmits with the happy-path value to continue the journey.
 
@@ -85,6 +85,7 @@ No Node.js or k6 installation needed — only Docker. On Windows, run via Git Ba
 | `RAMPUP_SECONDS` | `30` | Ramp-up period |
 | `VU_COUNT` | `100` | Concurrent virtual users |
 | `P95_THRESHOLD_MS` | `3000` | p95 response time threshold (ms) |
+| `HTTP_FAIL_RATE_THRESHOLD` | `0.01` | Max allowed HTTP request failure rate (e.g. `0.01` = 1%) |
 
 ## Adding New Journey Pages
 

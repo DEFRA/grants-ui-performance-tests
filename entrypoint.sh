@@ -41,7 +41,8 @@ echo "Generating report"
     "${RAMPUP_SECONDS:-30}" \
     "${VU_COUNT:-100}" \
     "${P95_THRESHOLD_MS:-3000}" \
-    "$PROFILE"
+    "$PROFILE" \
+    "${HTTP_FAIL_RATE_THRESHOLD:-0.01}"
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
 if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then

@@ -9,6 +9,7 @@ const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
 const RAMPUP_SECONDS = __ENV.RAMPUP_SECONDS || 30
 const VU_COUNT = __ENV.VU_COUNT || 100
 const P95_THRESHOLD_MS = __ENV.P95_THRESHOLD_MS || 3000
+const HTTP_FAIL_RATE_THRESHOLD = __ENV.HTTP_FAIL_RATE_THRESHOLD || 0.01
 
 const durationCheckDetails = new Trend('duration_check_details')
 const durationUpdateDetails = new Trend('duration_update_details')
@@ -75,7 +76,7 @@ export const options = {
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
         // Tolerate a small rate of transient failures rather than failing the whole run on one bad response;
         // this does not gate on expect() assertion failures (see try/catch in the default function), only on HTTP-level failures.
-        http_req_failed: ['rate<0.01']
+        http_req_failed: [`rate<${HTTP_FAIL_RATE_THRESHOLD}`]
     }
 }
 

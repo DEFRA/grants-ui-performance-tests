@@ -32,6 +32,7 @@ Test scenarios are parameterized via environment variables:
 | `RAMPUP_SECONDS` | `30` | Time to ramp up to target VU count |
 | `VU_COUNT` | `100` | Number of concurrent virtual users |
 | `P95_THRESHOLD_MS` | `3000` | 95th percentile response time threshold in milliseconds |
+| `HTTP_FAIL_RATE_THRESHOLD` | `0.01` | Maximum allowed HTTP request failure rate (e.g. `0.01` = 1%) before the test is marked as failed |
 
 ## Test Assertions
 
@@ -47,7 +48,7 @@ Each test scenario includes:
 
 The test enforces the following thresholds:
 - Per-page p(95) < `P95_THRESHOLD_MS`ms - 95th percentile page load time for each journey page must be under the configured threshold (default 3000ms). Each journey page has its own `duration_<page>` Trend metric.
-- `http_req_failed` rate == 0 - no HTTP request failures are permitted
+- `http_req_failed` rate < `HTTP_FAIL_RATE_THRESHOLD` (default `0.01`, i.e. 1%) - tolerates a small rate of transient HTTP-level failures rather than failing the whole run on one bad response; this does not gate on `expect()` assertion failures, only HTTP-level failures
 
 ## Running Tests
 

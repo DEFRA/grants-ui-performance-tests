@@ -12,6 +12,7 @@ RAMPUP_SECONDS="${6:-}"
 VU_COUNT="${7:-}"
 P95_THRESHOLD_MS="${8:-}"
 PROFILE="${9:-}"
+HTTP_FAIL_RATE_THRESHOLD="${10:-}"
 
 if [ ! -f "$METRICS_FILE" ]; then
     echo "Metrics file not found: $METRICS_FILE"
@@ -177,6 +178,12 @@ fi
 # Add timestamp
 echo "        <p class=\"timestamp\">Generated: $(date -u '+%Y-%m-%d %H:%M:%S UTC') &nbsp;&bull;&nbsp; <a href=\"metrics.json\">Download raw metrics</a></p>" >> "$OUTPUT_FILE"
 
+# Format the fault-tolerance rate as a percentage for readability (e.g. 0.01 -> 1%)
+HTTP_FAIL_RATE_PCT=""
+if [ -n "$HTTP_FAIL_RATE_THRESHOLD" ]; then
+    HTTP_FAIL_RATE_PCT=$(awk "BEGIN{printf \"%g%%\", $HTTP_FAIL_RATE_THRESHOLD * 100}")
+fi
+
 # Add config panel if env vars were provided
 if [ -n "$HOST_URL" ]; then
     cat >> "$OUTPUT_FILE" << CONFIGPANEL
@@ -188,6 +195,7 @@ if [ -n "$HOST_URL" ]; then
                 <tr><td><strong>Virtual Users</strong></td><td>${VU_COUNT}</td></tr>
                 <tr><td><strong>Duration</strong></td><td>${DURATION_SECONDS}s (ramp-up ${RAMPUP_SECONDS}s)</td></tr>
                 <tr><td><strong>p95 Threshold</strong></td><td>${P95_THRESHOLD_MS}ms</td></tr>
+                <tr><td><strong>HTTP Fault Tolerance</strong></td><td>${HTTP_FAIL_RATE_PCT:-N/A} of requests may fail</td></tr>
             </tbody>
         </table>
 CONFIGPANEL
