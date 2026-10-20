@@ -2,7 +2,7 @@ import http from 'k6/http'
 import { sleep, group } from 'k6'
 import { expect } from '../lib/k6chaijs.js'
 import { SharedArray } from 'k6/data'
-import { Trend } from 'k6/metrics'
+import { Trend, Counter } from 'k6/metrics'
 
 const HOST_URL = __ENV.HOST_URL || 'https://grants-ui.perf-test.cdp-int.defra.cloud'
 const DURATION_SECONDS = __ENV.DURATION_SECONDS || 180
@@ -35,6 +35,7 @@ const durationSummary = new Trend('duration_summary')
 const durationPotentialFunding = new Trend('duration_potential_funding')
 const durationDeclaration = new Trend('duration_declaration')
 const durationConfirmation = new Trend('duration_confirmation')
+const journeysCompleted = new Counter('journeys_completed')
 
 export const options = {
     scenarios: {
@@ -74,6 +75,8 @@ export const options = {
         duration_potential_funding: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_declaration: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_confirmation: [`p(95)<${P95_THRESHOLD_MS}`],
+        // Fail the run if no journey completes successfully
+        journeys_completed: ['count>0'],
         // Tolerate a small rate of transient failures rather than failing the whole run on one bad response;
         // this does not gate on expect() assertion failures (see try/catch in the default function), only on HTTP-level failures.
         http_req_failed: [`rate<${HTTP_FAIL_RATE_THRESHOLD}`]
@@ -314,6 +317,7 @@ export default function () {
             expect(response.url).to.include('confirmation')
             durationConfirmation.add(response.timings.duration)
             expect(response.body).to.include('WMP-')
+            journeysCompleted.add(1)
         })
     } catch (error) {
         console.error(`Error for URL: ${response?.url}, error: ${error.message}`)
