@@ -23,6 +23,7 @@ const durationExitEligibilityCountersignature = new Trend('duration_exit_eligibi
 const durationEligibilityTenantObligations = new Trend('duration_eligibility_tenant_obligations')
 const durationExitEligibilityTenantObligations = new Trend('duration_exit_eligibility_tenant_obligations')
 const durationEligibilityGrazingRights = new Trend('duration_eligibility_grazing_rights')
+const durationEligibilityGrazingRightsGuidance = new Trend('duration_eligibility_grazing_rights_guidance')
 const durationEligibilityValidWmp = new Trend('duration_eligibility_valid_wmp')
 const durationEligibilityHigherTier = new Trend('duration_eligibility_higher_tier')
 const durationEligibilityWmpAgreement = new Trend('duration_eligibility_wmp_agreement')
@@ -63,6 +64,7 @@ export const options = {
         duration_eligibility_tenant_obligations: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_exit_eligibility_tenant_obligations: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_eligibility_grazing_rights: [`p(95)<${P95_THRESHOLD_MS}`],
+        duration_eligibility_grazing_rights_guidance: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_eligibility_valid_wmp: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_eligibility_higher_tier: [`p(95)<${P95_THRESHOLD_MS}`],
         duration_eligibility_wmp_agreement: [`p(95)<${P95_THRESHOLD_MS}`],
@@ -232,6 +234,12 @@ export default function () {
             expect(response.url).to.include('eligibility-grazing-rights')
             durationEligibilityGrazingRights.add(response.timings.duration)
             submitJourneyForm({ landHasGrazingRights: 'true' })
+        })
+
+        group('eligibility-grazing-rights-guidance', () => {
+            expect(response.url).to.include('eligibility-grazing-rights-guidance')
+            durationEligibilityGrazingRightsGuidance.add(response.timings.duration)
+            submitJourneyForm()
         })
 
         group('eligibility-valid-wmp', () => {
