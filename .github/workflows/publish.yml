@@ -27,3 +27,6 @@ jobs:
         uses: DEFRA/cdp-build-action/build@main
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          # TGC-1813: Temporarily disable public DockerHub publishing while repos are private.
+          # Remove this override when the repos are public again; ECR publishing stays enabled.
+          push-dockerhub: false
