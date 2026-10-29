@@ -33,9 +33,9 @@ CSV file with user data containing two columns:
 Example:
 ```csv
 CRN,SBI
-1102838829,106284736
-1103623923,107365747
-1103313150,106514040
+9000000608,800000602
+9000000611,800000607
+9000000001,800000001
 ```
 
 The current file contains 20,000 users including the users in the `Perf-Test` Defra ID stub.
