@@ -269,8 +269,8 @@ export default function () {
         group('land-parcels', () => {
             expect(response.url).to.include('land-parcels')
             durationLandParcels.add(response.timings.duration)
-            const firstParcel = response.html().find('input[name="landParcels"]').first().attr('value')
-            submitJourneyForm({ landParcels: firstParcel })
+            const allParcels = Array.from(response.html().find('input[name="landParcels"]').map((_, el) => el.attr('value')))
+            submitJourneyForm({ landParcels: allParcels })
         })
 
         group('total-area-of-woodland', () => {
@@ -328,7 +328,8 @@ export default function () {
             journeysCompleted.add(1)
         })
     } catch (error) {
-        console.error(`Error for URL: ${response?.url}, error: ${error.message}`)
+        const page = response?.html()
+        console.error(`Error for URL: ${response?.url}, status: ${response?.status}, title: ${page?.find('title').text().trim()}, h1: ${page?.find('h1').first().text().trim()}, error: ${error.message}`)
         throw error
     }
 }
